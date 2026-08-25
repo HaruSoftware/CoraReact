@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import { testDatabaseConnection } from './db.js'
+import { setupDatabase, testDatabaseConnection } from './db.js'
 
 const app = express()
 const PORT = 3000
@@ -22,6 +22,24 @@ app.get('/api/health', async (_req, res) => {
     res.status(500).json({
       success: false,
       database: 'disconnected',
+    })
+  }
+})
+
+app.get('/api/setup-database', async (_req, res) => {
+  try {
+    await setupDatabase()
+
+    res.json({
+      success: true,
+      message: 'Banco de dados configurado com sucesso!',
+    })
+  } catch (error) {
+    console.error('Erro ao configurar banco:', error)
+
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao configurar banco de dados.',
     })
   }
 })
