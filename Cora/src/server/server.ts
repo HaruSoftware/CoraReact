@@ -1,12 +1,15 @@
 import express from 'express'
 import cors from 'cors'
 import { setupDatabase, testDatabaseConnection } from './db.js'
+import categoriasRouter from './routes/categorias.js'
 
 const app = express()
 const PORT = 3000
 
 app.use(cors())
 app.use(express.json())
+
+app.use('/api/categorias', categoriasRouter)
 
 app.get('/api/health', async (_req, res) => {
   try {
