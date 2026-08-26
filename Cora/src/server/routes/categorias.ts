@@ -1,12 +1,22 @@
 import { Router } from 'express'
 import { pool } from '../db.js'
+import { autenticar, type AuthRequest } from '../middleware/auth.js'
 
 const router = Router()
 
-router.get('/', async (_req, res) => {
+router.get('/', autenticar, async (_req, res) => {
+
   try {
+
+    const request = _req as AuthRequest
+    const id_conta = request.usuario!.id_conta
+
     const result = await pool.query(
-      'SELECT * FROM categoria ORDER BY id_categoria'
+      `SELECT id_categoria, id_conta, nome
+      FROM categoria
+      WHERE id_conta = $1
+      ORDER BY id_categoria`,
+      [id_conta]
     )
 
     res.json(result.rows)
@@ -20,20 +30,24 @@ router.get('/', async (_req, res) => {
   }
 })
 
-router.post('/', async (req, res) => {
+router.post('/', autenticar, async (req, res) => {
   try {
     const { nome } = req.body
+    const request = req as AuthRequest
+    const id_conta = request.usuario!.id_conta
 
     if (!nome) {
       return res.status(400).json({
         success: false,
-        message: 'O nome da categoria é obrigatório.',
+        message: 'Nome é obrigatório.',
       })
     }
 
     const result = await pool.query(
-      'INSERT INTO categoria (nome) VALUES ($1) RETURNING *',
-      [nome]
+      `INSERT INTO categoria (id_conta, nome)
+       VALUES ($1, $2)
+       RETURNING id_categoria, id_conta, nome`,
+      [id_conta, nome]
     )
 
     res.status(201).json(result.rows[0])
@@ -47,21 +61,29 @@ router.post('/', async (req, res) => {
   }
 })
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', autenticar, async (req, res) => {
   try {
     const { id } = req.params
     const { nome } = req.body
 
+    const request = req as AuthRequest
+    const id_conta = request.usuario!.id_conta
+
     if (!nome) {
       return res.status(400).json({
         success: false,
-        message: 'O nome da categoria é obrigatório.',
+        message: 'Conta e nome são obrigatórios.',
       })
     }
 
     const result = await pool.query(
-      'UPDATE categoria SET nome = $1 WHERE id_categoria = $2 RETURNING *',
-      [nome, id]
+      `UPDATE categoria
+       SET id_conta = $1,
+           nome = $2
+       WHERE id_categoria = $3
+        AND id_conta = $1
+       RETURNING id_categoria, id_conta, nome`,
+      [id_conta, nome, id]
     )
 
     if (result.rows.length === 0) {
@@ -82,13 +104,19 @@ router.put('/:id', async (req, res) => {
   }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', autenticar, async (req, res) => {
   try {
     const { id } = req.params
 
+    const request = req as AuthRequest
+    const id_conta = request.usuario!.id_conta
+
     const result = await pool.query(
-      'DELETE FROM categoria WHERE id_categoria = $1 RETURNING *',
-      [id]
+      `DELETE FROM categoria
+       WHERE id_categoria = $1
+       AND id_conta = $2
+       RETURNING id_categoria`,
+      [id, id_conta]
     )
 
     if (result.rows.length === 0) {

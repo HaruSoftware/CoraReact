@@ -1,15 +1,32 @@
+CREATE TABLE conta (
+    id_conta SERIAL PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    data_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE categoria (
     id_categoria SERIAL PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL
+    id_conta INTEGER NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+
+    CONSTRAINT fk_categoria_conta
+        FOREIGN KEY (id_conta)
+        REFERENCES conta(id_conta)
 );
 
 CREATE TABLE produto (
     id_produto SERIAL PRIMARY KEY,
+    id_conta INTEGER NOT NULL,
     nome VARCHAR(150) NOT NULL,
     descricao TEXT,
     preco DECIMAL(10, 2) NOT NULL,
     estoque INTEGER NOT NULL DEFAULT 0,
     id_categoria INTEGER NOT NULL,
+
+    CONSTRAINT fk_produto_conta
+        FOREIGN KEY (id_conta)
+        REFERENCES conta(id_conta),
 
     CONSTRAINT fk_produto_categoria
         FOREIGN KEY (id_categoria)
@@ -18,25 +35,40 @@ CREATE TABLE produto (
 
 CREATE TABLE cliente (
     id_cliente SERIAL PRIMARY KEY,
+    id_conta INTEGER NOT NULL,
     nome VARCHAR(150) NOT NULL,
-    cpf VARCHAR(11) NOT NULL UNIQUE,
+    cpf VARCHAR(11) NOT NULL,
     telefone VARCHAR(20),
-    email VARCHAR(150)
+    email VARCHAR(150),
+
+    CONSTRAINT fk_cliente_conta
+        FOREIGN KEY (id_conta)
+        REFERENCES conta(id_conta)
 );
 
 CREATE TABLE usuario (
     id_usuario SERIAL PRIMARY KEY,
+    id_conta INTEGER NOT NULL,
     nome VARCHAR(150) NOT NULL,
-    email VARCHAR(150) NOT NULL UNIQUE,
-    senha VARCHAR(255) NOT NULL
+    email VARCHAR(150) NOT NULL,
+    senha VARCHAR(255) NOT NULL,
+
+    CONSTRAINT fk_usuario_conta
+        FOREIGN KEY (id_conta)
+        REFERENCES conta(id_conta)
 );
 
 CREATE TABLE venda (
     id_venda SERIAL PRIMARY KEY,
+    id_conta INTEGER NOT NULL,
     id_cliente INTEGER NOT NULL,
     id_usuario INTEGER NOT NULL,
     data TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     valor_total DECIMAL(10, 2) NOT NULL,
+
+    CONSTRAINT fk_venda_conta
+        FOREIGN KEY (id_conta)
+        REFERENCES conta(id_conta),
 
     CONSTRAINT fk_venda_cliente
         FOREIGN KEY (id_cliente)
