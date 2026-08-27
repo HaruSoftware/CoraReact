@@ -1,14 +1,21 @@
 import { Router } from 'express'
 import { pool } from '../db.js'
+import { autenticar, type AuthRequest } from '../middleware/auth.js'
 
 const router = Router()
 
-router.get('/', async (_req, res) => {
+router.get('/', autenticar, async (req, res) => {
   try {
+
+    const request = req as AuthRequest
+    const id_conta = request.usuario!.id_conta
+
     const result = await pool.query(
       `SELECT id_produto, id_conta, nome, descricao, preco, estoque, id_categoria
-       FROM produto
-       ORDER BY id_produto`
+      FROM produto
+      WHERE id_conta = $1
+      ORDER BY id_produto`,
+      [id_conta]
     )
 
     res.json(result.rows)
@@ -22,10 +29,9 @@ router.get('/', async (_req, res) => {
   }
 })
 
-router.post('/', async (req, res) => {
+router.post('/', autenticar, async (req, res) => {
   try {
     const {
-      id_conta,
       nome,
       descricao,
       preco,
@@ -33,8 +39,10 @@ router.post('/', async (req, res) => {
       id_categoria
     } = req.body
 
+    const request = req as AuthRequest
+    const id_conta = request.usuario!.id_conta
+
     if (
-      !id_conta ||
       !nome ||
       preco === undefined ||
       estoque === undefined ||
@@ -42,7 +50,22 @@ router.post('/', async (req, res) => {
     ) {
       return res.status(400).json({
         success: false,
-        message: 'Conta, nome, preço, estoque e categoria são obrigatórios.',
+        message: 'Nome, preço, estoque e categoria são obrigatórios.',
+      })
+    }
+
+    const categoria = await pool.query(
+      `SELECT id_categoria
+       FROM categoria
+       WHERE id_categoria = $1
+       AND id_conta = $2`,
+      [id_categoria, id_conta]
+    )
+
+    if (categoria.rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Categoria não encontrada para esta conta.',
       })
     }
 
@@ -78,12 +101,11 @@ router.post('/', async (req, res) => {
   }
 })
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', autenticar, async (req, res) => {
   try {
     const { id } = req.params
 
     const {
-      id_conta,
       nome,
       descricao,
       preco,
@@ -91,8 +113,10 @@ router.put('/:id', async (req, res) => {
       id_categoria
     } = req.body
 
+    const request = req as AuthRequest
+    const id_conta = request.usuario!.id_conta
+
     if (
-      !id_conta ||
       !nome ||
       preco === undefined ||
       estoque === undefined ||
@@ -100,28 +124,43 @@ router.put('/:id', async (req, res) => {
     ) {
       return res.status(400).json({
         success: false,
-        message: 'Conta, nome, preço, estoque e categoria são obrigatórios.',
+        message: 'Nome, preço, estoque e categoria são obrigatórios.',
+      })
+    }
+
+    const categoria = await pool.query(
+      `SELECT id_categoria
+       FROM categoria
+       WHERE id_categoria = $1
+       AND id_conta = $2`,
+      [id_categoria, id_conta]
+    )
+
+    if (categoria.rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Categoria não encontrada para esta conta.',
       })
     }
 
     const result = await pool.query(
       `UPDATE produto
-       SET id_conta = $1,
-           nome = $2,
-           descricao = $3,
-           preco = $4,
-           estoque = $5,
-           id_categoria = $6
-       WHERE id_produto = $7
+       SET nome = $1,
+           descricao = $2,
+           preco = $3,
+           estoque = $4,
+           id_categoria = $5
+       WHERE id_produto = $6
+       AND id_conta = $7
        RETURNING id_produto, id_conta, nome, descricao, preco, estoque, id_categoria`,
       [
-        id_conta,
         nome,
         descricao,
         preco,
         estoque,
         id_categoria,
-        id
+        id,
+        id_conta
       ]
     )
 
@@ -143,15 +182,19 @@ router.put('/:id', async (req, res) => {
   }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', autenticar, async (req, res) => {
   try {
     const { id } = req.params
+
+    const request = req as AuthRequest
+    const id_conta = request.usuario!.id_conta
 
     const result = await pool.query(
       `DELETE FROM produto
        WHERE id_produto = $1
+       AND id_conta = $2
        RETURNING id_produto`,
-      [id]
+      [id, id_conta]
     )
 
     if (result.rows.length === 0) {
