@@ -1,29 +1,27 @@
-import { useEffect } from 'react'
-import { login, getToken } from './services/auth'
-import { api } from './services/api'
+import LoginPage from './pages/LoginPage'
+import Layout from './components/Layout'
+import { AuthProvider, useAuth } from './contexts/authContext'
+
+function AppContent() {
+  const { usuario, carregando } = useAuth()
+
+  if (carregando) {
+    return <p>Carregando...</p>
+  }
+
+  if (!usuario) {
+    return <LoginPage />
+  }
+
+  return <Layout />
+}
 
 function App() {
-  useEffect(() => {
-    async function testar() {
-      try {
-        await login('joao@email.com', 'SENHA_DO_JOAO')
-
-        const token = getToken()
-
-        const usuario = await api('/auth/me', {
-          token: token ?? undefined,
-        })
-
-        console.log('Usuário autenticado:', usuario)
-      } catch (error) {
-        console.error('Erro:', error)
-      }
-    }
-
-    testar()
-  }, [])
-
-  return <h1>Teste de autenticação</h1>
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  )
 }
 
 export default App
