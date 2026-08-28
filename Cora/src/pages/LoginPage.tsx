@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuth } from '../contexts/authContext'
+import { useAuth } from '../contexts/AuthContext'
 import './LoginPage.css'
 import { FcGoogle } from 'react-icons/fc'
 import { useNavigate } from 'react-router-dom'

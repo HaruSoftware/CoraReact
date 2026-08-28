@@ -10,6 +10,7 @@ import vendasRouter from './routes/vendas.js'
 import itensVendaRouter from './routes/itensVenda.js'
 import authRouter from './routes/auth.js'
 import { autenticar, type AuthRequest } from './middleware/auth.js'  
+import googleAuthRouter from './routes/googleAuth.js'
 
 const app = express()
 const PORT = 3000
@@ -25,6 +26,7 @@ app.use('/api/clientes', clientesRouter)
 app.use('/api/vendas', vendasRouter)
 app.use('/api/itens-venda', itensVendaRouter)
 app.use('/api/auth', authRouter)
+app.use('/api/auth', googleAuthRouter)
 
 app.get('/api/auth/me', autenticar, (req, res) => {
     const request = req as AuthRequest
@@ -49,6 +51,24 @@ app.get('/api/health', async (_req, res) => {
     res.status(500).json({
       success: false,
       database: 'disconnected',
+    })
+  }
+})
+
+app.get('/api/setup-database', async (_req, res) => {
+  try {
+    await setupDatabase()
+
+    res.json({
+      success: true,
+      message: 'Banco de dados configurado com sucesso!',
+    })
+  } catch (error) {
+    console.error('Erro ao configurar banco:', error)
+
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao configurar banco de dados.',
     })
   }
 })

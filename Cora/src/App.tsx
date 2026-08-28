@@ -4,7 +4,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import Layout from './components/Layout'
 
-import { AuthProvider, useAuth } from './contexts/authContext'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 
 function AppContent() {
   const { usuario, carregando } = useAuth()
@@ -46,6 +46,11 @@ function AppContent() {
 
 function App() {
   return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </BrowserRouter>
     <BrowserRouter>
       <AuthProvider>
         <AppContent />
