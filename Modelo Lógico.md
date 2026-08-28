@@ -46,7 +46,8 @@
 - **id_conta** (FK)
 - nome
 - email
-- senha
+- senha (opcional para usuarios google)
+- google_id (UNIQUE, OPCIONAL)
 
 ---
 
