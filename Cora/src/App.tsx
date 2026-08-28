@@ -51,11 +51,6 @@ function App() {
         <AppContent />
       </AuthProvider>
     </BrowserRouter>
-    <BrowserRouter>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </BrowserRouter>
   )
 }
 
