@@ -51,7 +51,8 @@ CREATE TABLE usuario (
     id_conta INTEGER NOT NULL,
     nome VARCHAR(150) NOT NULL,
     email VARCHAR(150) NOT NULL,
-    senha VARCHAR(255) NOT NULL,
+    senha VARCHAR(255),
+    google_id VARCHAR(255) UNIQUE,
 
     CONSTRAINT fk_usuario_conta
         FOREIGN KEY (id_conta)
