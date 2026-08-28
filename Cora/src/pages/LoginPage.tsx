@@ -1,8 +1,12 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/authContext'
+import './LoginPage.css'
+import { FcGoogle } from 'react-icons/fc'
+import { useNavigate } from 'react-router-dom'
 
 function LoginPage() {
   const { login } = useAuth()
+  const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
@@ -31,41 +35,90 @@ function LoginPage() {
   }
 
   return (
-    <div>
-      <h1>Login</h1>
+    <main className="login-page">
+      <section className="login-card">
 
-      <form onSubmit={handleLogin}>
-        <div>
-          <label htmlFor="email">E-mail</label>
+        <div className="login-header">
+          <h1>Cora</h1>
 
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
+          <p>
+            Gestão eficiente para o seu negócio.
+          </p>
         </div>
 
-        <div>
-          <label htmlFor="senha">Senha</label>
+        <form className="login-form" onSubmit={handleLogin}>
 
-          <input
-            id="senha"
-            type="password"
-            value={senha}
-            onChange={(event) => setSenha(event.target.value)}
-            required
-          />
+          <div className="input-group">
+            <label htmlFor="email">
+              E-mail
+            </label>
+
+            <input
+              id="email"
+              type="email"
+              placeholder="Digite seu e-mail"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+              autoComplete="email"
+            />
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="senha">
+              Senha
+            </label>
+
+            <input
+              id="senha"
+              type="password"
+              placeholder="Digite sua senha"
+              value={senha}
+              onChange={(event) => setSenha(event.target.value)}
+              required
+              autoComplete="current-password"
+            />
+          </div>
+
+          {erro && (
+            <div className="login-error">
+              {erro}
+            </div>
+          )}
+
+          <button
+            className="login-button"
+            type="submit"
+            disabled={carregando}
+          >
+            {carregando ? 'Entrando...' : 'Entrar'}
+          </button>
+
+          <button
+            type="button"
+            className="google-button"
+          >
+            <FcGoogle className="google-icon" />
+            Continuar com Google
+          </button>
+
+        </form>
+
+        <div className="login-footer">
+          <span>
+            Ainda não possui uma conta?
+          </span>
+
+          <button
+            type="button"
+            onClick={() => navigate('/register')}
+          >
+            Criar conta
+          </button>
         </div>
 
-        {erro && <p>{erro}</p>}
-
-        <button type="submit" disabled={carregando}>
-          {carregando ? 'Entrando...' : 'Entrar'}
-        </button>
-      </form>
-    </div>
+      </section>
+    </main>
   )
 }
 

@@ -6,7 +6,11 @@ import {
   type ReactNode,
 } from 'react'
 import { api } from '../services/api'
-import { getToken, login as loginApi, logout as logoutApi } from '../services/auth'
+import {
+  getToken,
+  login as loginApi,
+  logout as logoutApi,
+} from '../services/auth'
 
 type Usuario = {
   id_usuario: number
@@ -20,6 +24,13 @@ type AuthContextData = {
   token: string | null
   carregando: boolean
   login: (email: string, senha: string) => Promise<void>
+  register: (
+    nomeEmpresa: string,
+    emailEmpresa: string,
+    nome: string,
+    email: string,
+    senha: string
+  ) => Promise<void>
   logout: () => void
 }
 
@@ -75,6 +86,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUsuario(usuarioData.usuario)
   }
 
+  async function register(
+    nomeEmpresa: string,
+    emailEmpresa: string,
+    nome: string,
+    email: string,
+    senha: string
+  ) {
+    const data = await api('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        nomeEmpresa,
+        emailEmpresa,
+        nome,
+        email,
+        senha,
+      }),
+    })
+
+    const tokenNovo = data.token
+
+    const usuarioData = await api('/auth/me', {
+      token: tokenNovo,
+    })
+
+    setToken(tokenNovo)
+    setUsuario(usuarioData.usuario)
+  }
+
   function logout() {
     logoutApi()
     setUsuario(null)
@@ -88,6 +127,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         token,
         carregando,
         login,
+        register,
         logout,
       }}
     >
