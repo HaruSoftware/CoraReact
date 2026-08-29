@@ -97,10 +97,14 @@ function LoginPage() {
           <button
             type="button"
             className="google-button"
+            onClick={() => {
+              window.location.href = 'http://localhost:3000/api/auth/google'
+            }}
           >
             <FcGoogle className="google-icon" />
             Continuar com Google
           </button>
+
 
         </form>
 

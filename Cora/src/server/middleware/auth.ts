@@ -17,19 +17,24 @@ export async function autenticar(
 ) {
   const authorization = req.headers.authorization
 
-  if (!authorization) {
+  let token: string | undefined
+
+  if (authorization) {
+    const [tipo, tokenAuthorization] = authorization.split(' ')
+
+    if (tipo === 'Bearer' && tokenAuthorization) {
+      token = tokenAuthorization
+    }
+  }
+
+  if (!token) {
+    token = req.cookies.token
+  }
+
+  if (!token) {
     return res.status(401).json({
       success: false,
       message: 'Token não informado.',
-    })
-  }
-
-  const [tipo, token] = authorization.split(' ')
-
-  if (tipo !== 'Bearer' || !token) {
-    return res.status(401).json({
-      success: false,
-      message: 'Token inválido.',
     })
   }
 

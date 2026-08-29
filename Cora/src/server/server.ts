@@ -11,11 +11,19 @@ import itensVendaRouter from './routes/itensVenda.js'
 import authRouter from './routes/auth.js'
 import { autenticar, type AuthRequest } from './middleware/auth.js'  
 import googleAuthRouter from './routes/googleAuth.js'
+import cookieParser from 'cookie-parser'
 
 const app = express()
 const PORT = 3000
 
-app.use(cors())
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  })
+)
+
+app.use(cookieParser())
 app.use(express.json())
 
 app.use('/api/categorias', categoriasRouter)

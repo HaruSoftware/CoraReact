@@ -7,7 +7,6 @@ import {
 } from 'react'
 import { api } from '../services/api'
 import {
-  getToken,
   login as loginApi,
   logout as logoutApi,
 } from '../services/auth'
@@ -21,7 +20,6 @@ type Usuario = {
 
 type AuthContextData = {
   usuario: Usuario | null
-  token: string | null
   carregando: boolean
   login: (email: string, senha: string) => Promise<void>
   register: (
@@ -31,7 +29,7 @@ type AuthContextData = {
     email: string,
     senha: string
   ) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextData | undefined>(undefined)
@@ -42,29 +40,16 @@ type AuthProviderProps = {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [usuario, setUsuario] = useState<Usuario | null>(null)
-  const [token, setToken] = useState<string | null>(getToken())
   const [carregando, setCarregando] = useState(true)
 
   useEffect(() => {
     async function verificarSessao() {
-      const tokenAtual = getToken()
-
-      if (!tokenAtual) {
-        setCarregando(false)
-        return
-      }
-
       try {
-        const data = await api('/auth/me', {
-          token: tokenAtual,
-        })
+        const data = await api('/auth/me')
 
         setUsuario(data.usuario)
-        setToken(tokenAtual)
       } catch {
-        logoutApi()
         setUsuario(null)
-        setToken(null)
       } finally {
         setCarregando(false)
       }
@@ -74,15 +59,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   async function login(email: string, senha: string) {
-    const data = await loginApi(email, senha)
+    await loginApi(email, senha)
 
-    const tokenNovo = data.token
+    const usuarioData = await api('/auth/me')
 
-    const usuarioData = await api('/auth/me', {
-      token: tokenNovo,
-    })
-
-    setToken(tokenNovo)
     setUsuario(usuarioData.usuario)
   }
 
@@ -93,7 +73,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     email: string,
     senha: string
   ) {
-    const data = await api('/auth/register', {
+    await api('/auth/register', {
       method: 'POST',
       body: JSON.stringify({
         nomeEmpresa,
@@ -104,27 +84,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }),
     })
 
-    const tokenNovo = data.token
+    const usuarioData = await api('/auth/me')
 
-    const usuarioData = await api('/auth/me', {
-      token: tokenNovo,
-    })
-
-    setToken(tokenNovo)
     setUsuario(usuarioData.usuario)
   }
 
-  function logout() {
-    logoutApi()
+  async function logout() {
+    await logoutApi()
+
     setUsuario(null)
-    setToken(null)
   }
 
   return (
     <AuthContext.Provider
       value={{
         usuario,
-        token,
         carregando,
         login,
         register,

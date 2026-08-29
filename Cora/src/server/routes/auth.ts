@@ -5,6 +5,19 @@ import jwt from 'jsonwebtoken'
 
 const router = Router()
 
+router.post('/logout', (_req, res) => {
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    })
+
+    res.json({
+        success: true,
+        message: 'Logout realizado com sucesso.',
+    })
+})
+
 // LOGIN
 
 router.post('/login', async (req, res) => {
@@ -57,9 +70,15 @@ router.post('/login', async (req, res) => {
             }
         )
 
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 8 * 60 * 60 * 1000,
+        })
+
         res.json({
             success: true,
-            token,
             usuario: {
                 id_usuario: usuario.id_usuario,
                 id_conta: usuario.id_conta,
@@ -170,10 +189,16 @@ router.post('/register', async (req, res) => {
             }
         )
 
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 8 * 60 * 60 * 1000,
+        })
+
         res.status(201).json({
             success: true,
             message: 'Conta criada com sucesso.',
-            token,
             usuario,
         })
     } catch (error) {
