@@ -13,6 +13,7 @@ CREATE TABLE categoria (
     CONSTRAINT fk_categoria_conta
         FOREIGN KEY (id_conta)
         REFERENCES conta(id_conta)
+        ON DELETE CASCADE
 );
 
 CREATE TABLE produto (
@@ -26,11 +27,13 @@ CREATE TABLE produto (
 
     CONSTRAINT fk_produto_conta
         FOREIGN KEY (id_conta)
-        REFERENCES conta(id_conta),
+        REFERENCES conta(id_conta)
+        ON DELETE CASCADE,
 
     CONSTRAINT fk_produto_categoria
         FOREIGN KEY (id_categoria)
         REFERENCES categoria(id_categoria)
+        ON DELETE CASCADE
 );
 
 CREATE TABLE cliente (
@@ -44,6 +47,7 @@ CREATE TABLE cliente (
     CONSTRAINT fk_cliente_conta
         FOREIGN KEY (id_conta)
         REFERENCES conta(id_conta)
+        ON DELETE CASCADE
 );
 
 CREATE TABLE usuario (
@@ -57,6 +61,7 @@ CREATE TABLE usuario (
     CONSTRAINT fk_usuario_conta
         FOREIGN KEY (id_conta)
         REFERENCES conta(id_conta)
+        ON DELETE CASCADE
 );
 
 CREATE TABLE venda (
@@ -69,7 +74,8 @@ CREATE TABLE venda (
 
     CONSTRAINT fk_venda_conta
         FOREIGN KEY (id_conta)
-        REFERENCES conta(id_conta),
+        REFERENCES conta(id_conta)
+        ON DELETE CASCADE,
 
     CONSTRAINT fk_venda_cliente
         FOREIGN KEY (id_cliente)
@@ -89,7 +95,8 @@ CREATE TABLE item_venda (
 
     CONSTRAINT fk_item_venda_venda
         FOREIGN KEY (id_venda)
-        REFERENCES venda(id_venda),
+        REFERENCES venda(id_venda)
+        ON DELETE CASCADE,
 
     CONSTRAINT fk_item_venda_produto
         FOREIGN KEY (id_produto)

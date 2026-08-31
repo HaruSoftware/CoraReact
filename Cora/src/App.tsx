@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import Layout from './components/Layout'
+import SettingsPage from './pages/SettingsPage'
 
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 
@@ -40,7 +41,14 @@ function AppContent() {
         path="*"
         element={<Navigate to={usuario ? '/' : '/login'} replace />}
       />
+      <Route
+        path="/settings"
+        element={
+          usuario ? <SettingsPage /> : <Navigate to="/login" replace />
+        }
+      />
     </Routes>
+
   )
 }
 

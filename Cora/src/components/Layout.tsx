@@ -1,9 +1,11 @@
 import { useAuth } from '../contexts/AuthContext'
 import './Layout.css'
+import { useNavigate } from 'react-router-dom'
+import { FiSettings } from 'react-icons/fi'
 
 function Layout() {
   const { usuario, logout } = useAuth()
-
+  const navigate = useNavigate()
   return (
     <div className="layout">
 
@@ -50,13 +52,23 @@ function Layout() {
         </nav>
 
         <div className="sidebar-footer">
-          <span className="account-label">
-            Conta
-          </span>
+          <div className="account-info">
+            <span className="account-label">
+              Conta
+            </span>
 
-          <strong>
-            #{usuario?.id_conta}
-          </strong>
+            <strong>
+              #{usuario?.id_conta}
+            </strong>
+          </div>
+
+          <button
+            className="settings-button"
+            onClick={() => navigate('/settings')}
+            title="Configurações"
+          >
+            <FiSettings />
+          </button>
         </div>
 
       </aside>

@@ -1,12 +1,14 @@
 const API_URL = 'http://localhost:3000/api'
 
-type ApiOptions = RequestInit
+type ApiOptions = RequestInit & {
+  token?: string
+}
 
 export async function api(
   endpoint: string,
   options: ApiOptions = {}
 ) {
-  const { headers, ...fetchOptions } = options
+  const { token, headers, ...fetchOptions } = options
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...fetchOptions,

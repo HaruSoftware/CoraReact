@@ -1,0 +1,276 @@
+.settings-page {
+  min-height: 100vh;
+  background: #f5f7fb;
+  color: #1f2937;
+  padding: 40px;
+  font-family: Inter, Arial, sans-serif;
+}
+
+.settings-header {
+  max-width: 1000px;
+  margin: 0 auto 35px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.back-button {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #6b7280;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.back-button:hover {
+  background: #f9fafb;
+  color: #111827;
+}
+
+.settings-header-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.settings-header h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #111827;
+}
+
+
+/* =========================
+   CONTEÚDO
+========================= */
+
+.settings-content {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.settings-section {
+  margin-bottom: 32px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.section-icon {
+  width: 42px;
+  height: 42px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4b5563;
+  font-size: 19px;
+}
+
+.section-heading h2 {
+  margin: 0 0 3px;
+  font-size: 17px;
+  color: #111827;
+}
+
+.section-heading p {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+
+/* =========================
+   CARDS
+========================= */
+
+.settings-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.info-row {
+  padding: 15px 0;
+  border-bottom: 1px solid #f0f1f3;
+}
+
+.info-row:first-child {
+  padding-top: 0;
+}
+
+.info-row span {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.info-row strong {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.secondary-button {
+  margin-top: 20px;
+  padding: 10px 15px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #374151;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.secondary-button:hover {
+  background: #f9fafb;
+}
+
+
+/* =========================
+   USUÁRIOS
+========================= */
+
+.users-empty {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.empty-users-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 20px;
+  margin-bottom: 13px;
+}
+
+.users-empty strong {
+  font-size: 14px;
+  color: #374151;
+}
+
+.users-empty p {
+  max-width: 350px;
+  margin: 7px 0 17px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #9ca3af;
+}
+
+.primary-button {
+  padding: 10px 16px;
+  border: none;
+  background: #111827;
+  color: #ffffff;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.primary-button:hover {
+  background: #1f2937;
+}
+
+
+/* =========================
+   ZONA DE PERIGO
+========================= */
+
+.danger-icon {
+  color: #b91c1c;
+}
+
+.danger-card {
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 22px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.danger-card strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #991b1b;
+  font-size: 14px;
+}
+
+.danger-card p {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.danger-button {
+  flex-shrink: 0;
+  padding: 10px 15px;
+  border: 1px solid #dc2626;
+  background: #ffffff;
+  color: #dc2626;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.danger-button:hover {
+  background: #fef2f2;
+}
+
+
+/* =========================
+   RESPONSIVIDADE
+========================= */
+
+@media (max-width: 700px) {
+  .settings-page {
+    padding: 24px 16px;
+  }
+
+  .settings-header h1 {
+    font-size: 23px;
+  }
+
+  .danger-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .danger-button {
+    width: 100%;
+  }
+}
