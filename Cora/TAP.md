@@ -162,7 +162,6 @@ graph TD
 ---
 
 ## 9. ✍️ Aprovação do Termo de Abertura
-
 Por meio deste documento, formaliza-se a abertura e os direcionais estratégicos do projeto **Cora**.
 
 | Papel | Nome | Nome | Data |
