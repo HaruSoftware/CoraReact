@@ -165,10 +165,10 @@ graph TD
 
 Por meio deste documento, formaliza-se a abertura e os direcionais estratégicos do projeto **Cora**.
 
-| Papel | Nome | Nome Data |
+| Papel | Nome | Nome | Data |
 | :--- | :--- | :---: |
 | **Gerente do Projeto** | Átila V. |Neilon Jefferson| | 31/08/2026 |
-| **Product Owner** | Átila V. | 31/08/2026 |
+| **Product Owner** | Átila V. | Neilon |31/08/2026 |
 
 ---
 *Documento versionado e mantido no repositório oficial do projeto Cora.*
