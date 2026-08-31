@@ -76,25 +76,39 @@ router.put('/:id', autenticar, async (req, res) => {
         const request = req as AuthRequest
         const id_conta = request.usuario!.id_conta
 
-        if (!nome || !email || !senha) {
+        if (!nome || !email) {
             return res.status(400).json({
                 success: false,
-                message: 'Nome, email e senha são obrigatórios.',
+                message: 'Nome e email são obrigatórios.',
             })
         }
 
-        const senhaHash = await bcrypt.hash(senha, 10)
+        let result
 
-        const result = await pool.query(
-            `UPDATE usuario
-             SET nome = $1,
-                 email = $2,
-                 senha = $3
-             WHERE id_usuario = $4
-             AND id_conta = $5
-             RETURNING id_usuario, id_conta, nome, email`,
-            [nome, email, senhaHash, id, id_conta]
-        )
+        if (senha) {
+            const senhaHash = await bcrypt.hash(senha, 10)
+
+            result = await pool.query(
+                `UPDATE usuario
+                 SET nome = $1,
+                     email = $2,
+                     senha = $3
+                 WHERE id_usuario = $4
+                 AND id_conta = $5
+                 RETURNING id_usuario, id_conta, nome, email`,
+                [nome, email, senhaHash, id, id_conta]
+            )
+        } else {
+            result = await pool.query(
+                `UPDATE usuario
+                 SET nome = $1,
+                     email = $2
+                 WHERE id_usuario = $3
+                 AND id_conta = $4
+                 RETURNING id_usuario, id_conta, nome, email`,
+                [nome, email, id, id_conta]
+            )
+        }
 
         if (result.rows.length === 0) {
             return res.status(404).json({

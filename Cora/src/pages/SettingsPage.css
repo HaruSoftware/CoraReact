@@ -274,3 +274,151 @@
     width: 100%;
   }
 }
+
+/* FORMULÁRIO DE USUÁRIO */
+
+.user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.user-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.user-form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.user-form-group input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 13px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.user-form-group input:focus {
+  border-color: #9ca3af;
+  box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.15);
+}
+
+.user-form-group input::placeholder {
+  color: #9ca3af;
+}
+
+.user-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* LISTA DE USUÁRIOS */
+
+.users-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.user-item:first-child {
+  padding-top: 0;
+}
+
+.user-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.user-info {
+  min-width: 0;
+}
+
+.user-info strong {
+  display: block;
+  font-size: 14px;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.user-info span {
+  display: block;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.user-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.user-action-button:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.user-action-button.delete:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+.settings-input {
+  width: 100%;
+  max-width: 500px;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.settings-input:focus {
+  border-color: #111827;
+  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
+}
+
+.settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
