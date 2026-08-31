@@ -1,0 +1,243 @@
+/* ====================================================
+   SISTEMA GLOBAL DE TOAST / POPUPS DE NOTIFICAÇÃO
+   Posicionamento: Centro Inferior com cores fortes
+   ==================================================== */
+
+.toast-container {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 10px;
+  z-index: 999999;
+  pointer-events: none;
+  max-width: 480px;
+  width: calc(100% - 32px);
+}
+
+.toast-box {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  box-shadow: 0 14px 28px -4px rgba(0, 0, 0, 0.22),
+              0 6px 12px -2px rgba(0, 0, 0, 0.12);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+  width: 100%;
+  color: #ffffff;
+}
+
+/* =========================
+   CORES VIBRANTES E FORTES
+========================= */
+
+/* SUCESSO - VERDE FORTE */
+.toast-box.toast-success {
+  background: #059669;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.toast-box.toast-success .toast-icon-svg {
+  color: #ffffff;
+}
+
+.toast-box.toast-success .toast-title {
+  color: #ffffff;
+}
+
+.toast-box.toast-success .toast-close-btn {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.toast-box.toast-success .toast-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+/* ERRO - VERMELHO FORTE */
+.toast-box.toast-error {
+  background: #dc2626;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.toast-box.toast-error .toast-icon-svg {
+  color: #ffffff;
+}
+
+.toast-box.toast-error .toast-title {
+  color: #ffffff;
+}
+
+.toast-box.toast-error .toast-close-btn {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.toast-box.toast-error .toast-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+/* AVISO - LARANJA FORTE */
+.toast-box.toast-warning {
+  background: #ea580c;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.toast-box.toast-warning .toast-icon-svg {
+  color: #ffffff;
+}
+
+.toast-box.toast-warning .toast-title {
+  color: #ffffff;
+}
+
+.toast-box.toast-warning .toast-close-btn {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.toast-box.toast-warning .toast-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+/* INFO - AZUL FORTE */
+.toast-box.toast-info {
+  background: #2563eb;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.toast-box.toast-info .toast-icon-svg {
+  color: #ffffff;
+}
+
+.toast-box.toast-info .toast-title {
+  color: #ffffff;
+}
+
+.toast-box.toast-info .toast-close-btn {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.toast-box.toast-info .toast-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+/* =========================
+   ELEMENTOS INTERNOS
+========================= */
+
+.toast-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toast-icon-svg {
+  font-size: 21px;
+}
+
+.toast-content-wrapper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toast-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.toast-message {
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  word-break: break-word;
+  color: #ffffff;
+}
+
+.toast-close-btn {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  margin-right: -4px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+/* =========================
+   ANIMAÇÕES FADE IN & OUT
+========================= */
+
+.toast-fade-in {
+  animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toast-fade-out {
+  animation: toastSlideOut 0.3s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+}
+
+@keyframes toastSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toastSlideOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    max-height: 120px;
+    margin-bottom: 0;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: -10px;
+    border-width: 0;
+  }
+}
+
+/* =========================
+   RESPONSIVIDADE
+========================= */
+
+@media (max-width: 600px) {
+  .toast-container {
+    bottom: 20px;
+    left: 16px;
+    right: 16px;
+    transform: none;
+    width: auto;
+    max-width: none;
+  }
+
+  .toast-box {
+    padding: 11px 15px;
+  }
+}

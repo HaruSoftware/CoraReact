@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 import { FcGoogle } from 'react-icons/fc'
 import './RegisterPage.css'
 import { useNavigate } from 'react-router-dom'
@@ -7,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 function RegisterPage() {
     const navigate = useNavigate()
     const { register } = useAuth()
+    const { toast } = useToast()
     const [nomeEmpresa, setNomeEmpresa] = useState('')
     const [emailEmpresa, setEmailEmpresa] = useState('')
     const [nome, setNome] = useState('')
@@ -22,7 +24,9 @@ function RegisterPage() {
         setErro('')
 
         if (senha !== confirmarSenha) {
-            setErro('As senhas não coincidem.')
+            const msg = 'As senhas não coincidem.'
+            setErro(msg)
+            toast.warning(msg)
             return
         }
 
@@ -36,12 +40,11 @@ function RegisterPage() {
                 email,
                 senha
             )
-        } catch (error) {
-            if (error instanceof Error) {
-                setErro(error.message)
-            } else {
-                setErro('Erro ao realizar cadastro.')
-            }
+            toast.success('Conta criada com sucesso!')
+        } catch (error: any) {
+            const msg = error instanceof Error ? error.message : 'Erro ao realizar cadastro.'
+            setErro(msg)
+            toast.error(msg)
         } finally {
             setCarregando(false)
         }

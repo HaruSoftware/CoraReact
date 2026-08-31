@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 import './LoginPage.css'
 import { FcGoogle } from 'react-icons/fc'
 import { useNavigate } from 'react-router-dom'
 
 function LoginPage() {
   const { login } = useAuth()
+  const { toast } = useToast()
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
@@ -21,14 +23,11 @@ function LoginPage() {
 
     try {
       await login(email, senha)
-
-      console.log('Login realizado com sucesso!')
-    } catch (error) {
-      if (error instanceof Error) {
-        setErro(error.message)
-      } else {
-        setErro('Erro ao realizar login.')
-      }
+      toast.success('Login realizado com sucesso!')
+    } catch (error: any) {
+      const msg = error instanceof Error ? error.message : 'Erro ao realizar login.'
+      setErro(msg)
+      toast.error(msg)
     } finally {
       setCarregando(false)
     }

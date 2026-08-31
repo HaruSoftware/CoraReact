@@ -6,6 +6,7 @@ import Layout from './components/Layout'
 import SettingsPage from './pages/SettingsPage'
 
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { ToastProvider } from './contexts/ToastContext'
 
 function AppContent() {
   const { usuario, carregando } = useAuth()
@@ -38,14 +39,15 @@ function AppContent() {
       />
 
       <Route
-        path="*"
-        element={<Navigate to={usuario ? '/' : '/login'} replace />}
-      />
-      <Route
         path="/settings"
         element={
           usuario ? <SettingsPage /> : <Navigate to="/login" replace />
         }
+      />
+
+      <Route
+        path="*"
+        element={<Navigate to={usuario ? '/' : '/login'} replace />}
       />
     </Routes>
 
@@ -56,7 +58,9 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppContent />
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
   )

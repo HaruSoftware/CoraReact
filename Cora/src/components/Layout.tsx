@@ -1,11 +1,32 @@
+import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 import './Layout.css'
 import { useNavigate } from 'react-router-dom'
-import { FiSettings } from 'react-icons/fi'
+import { FiSettings, FiLogOut, FiX } from 'react-icons/fi'
 
 function Layout() {
   const { usuario, logout } = useAuth()
+  const { toast } = useToast()
   const navigate = useNavigate()
+  const [modalLogoutAberto, setModalLogoutAberto] = useState(false)
+  const [saindo, setSaindo] = useState(false)
+
+  async function handleConfirmarLogout() {
+    try {
+      setSaindo(true)
+      await logout()
+      toast.info('Você saiu da sua conta.')
+      navigate('/login')
+    } catch (error) {
+      console.error('Erro ao sair:', error)
+      toast.error('Erro ao encerrar sessão.')
+    } finally {
+      setSaindo(false)
+      setModalLogoutAberto(false)
+    }
+  }
+
   return (
     <div className="layout">
 
@@ -44,7 +65,10 @@ function Layout() {
             Vendas
           </button>
 
-          <button className="nav-item">
+          <button
+            className="nav-item"
+            onClick={() => navigate('/settings')}
+          >
             <span>♟</span>
             Usuários
           </button>
@@ -104,7 +128,7 @@ function Layout() {
 
             <button
               className="logout-button"
-              onClick={logout}
+              onClick={() => setModalLogoutAberto(true)}
             >
               Sair
             </button>
@@ -301,6 +325,65 @@ function Layout() {
         </main>
 
       </div>
+
+      {/* MODAL: CONFIRMAÇÃO DE LOGOUT */}
+      {modalLogoutAberto && (
+        <div
+          className="modal-overlay"
+          onClick={() => !saindo && setModalLogoutAberto(false)}
+        >
+          <div
+            className="modal-container logout-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <div className="modal-title-wrap">
+                <div className="modal-icon logout-icon">
+                  <FiLogOut />
+                </div>
+                <div>
+                  <h3>Confirmar saída</h3>
+                  <p>Deseja realmente encerrar sua sessão?</p>
+                </div>
+              </div>
+
+              <button
+                className="modal-close-button"
+                onClick={() => setModalLogoutAberto(false)}
+                disabled={saindo}
+              >
+                <FiX />
+              </button>
+            </div>
+
+            <div className="modal-body-text">
+              <p>
+                Você precisará informar seu e-mail e senha novamente para acessar o sistema.
+              </p>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-secondary-button"
+                onClick={() => setModalLogoutAberto(false)}
+                disabled={saindo}
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                className="modal-danger-button"
+                onClick={handleConfirmarLogout}
+                disabled={saindo}
+              >
+                {saindo ? 'Saindo...' : 'Sim, sair'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )
