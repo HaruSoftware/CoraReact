@@ -372,6 +372,7 @@
 
 .user-info {
   min-width: 0;
+  align-items: flex-start;
 }
 
 .user-name-wrapper {
