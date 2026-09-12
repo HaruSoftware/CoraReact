@@ -144,6 +144,27 @@
   min-height: 100vh;
 }
 
+.page-content {
+  min-height: calc(100vh - 82px);
+  padding: 38px;
+}
+
+.page-content > .settings-page,
+.page-content > .products-page,
+.page-content > .categories-page {
+  min-height: 0;
+  padding: 0;
+}
+
+.page-content .settings-header,
+.page-content .settings-content,
+.page-content .products-header,
+.page-content .products-content,
+.page-content .categories-header,
+.page-content .categories-content {
+  max-width: none;
+}
+
 
 /* =========================
    TOPBAR
@@ -421,6 +442,10 @@
     padding: 24px;
   }
 
+  .page-content {
+    padding: 24px;
+  }
+
   .user-info {
     display: none;
   }
@@ -486,6 +511,10 @@
   }
 
   .dashboard {
+    padding: 20px 16px;
+  }
+
+  .page-content {
     padding: 20px 16px;
   }
 

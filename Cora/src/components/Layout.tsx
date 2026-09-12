@@ -1,16 +1,40 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
+import { api } from '../services/api'
 import './Layout.css'
-import { useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { FiSettings, FiLogOut, FiX } from 'react-icons/fi'
 
 function Layout() {
   const { usuario, logout } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
+  const location = useLocation()
   const [modalLogoutAberto, setModalLogoutAberto] = useState(false)
   const [saindo, setSaindo] = useState(false)
+  const [quantidadeProdutos, setQuantidadeProdutos] = useState<number | null>(null)
+  const paginaAtual = location.pathname === '/produtos'
+    ? 'Produtos'
+    : location.pathname === '/categorias'
+      ? 'Categorias'
+    : location.pathname === '/settings'
+      ? 'Configurações'
+      : 'Dashboard'
+
+  useEffect(() => {
+    async function carregarQuantidadeProdutos() {
+      try {
+        const produtos = await api('/produtos')
+        setQuantidadeProdutos(Array.isArray(produtos) ? produtos.length : 0)
+      } catch (error) {
+        console.error('Erro ao carregar quantidade de produtos:', error)
+        setQuantidadeProdutos(0)
+      }
+    }
+
+    carregarQuantidadeProdutos()
+  }, [location.pathname])
 
   async function handleConfirmarLogout() {
     try {
@@ -40,17 +64,17 @@ function Layout() {
 
         <nav className="sidebar-nav">
 
-          <button className="nav-item active">
+          <button className={`nav-item ${location.pathname === '/' ? 'active' : ''}`} onClick={() => navigate('/')}>
             <span>⌂</span>
             Dashboard
           </button>
 
-          <button className="nav-item">
+          <button className={`nav-item ${location.pathname === '/produtos' ? 'active' : ''}`} onClick={() => navigate('/produtos')}>
             <span>▣</span>
             Produtos
           </button>
 
-          <button className="nav-item">
+          <button className={`nav-item ${location.pathname === '/categorias' ? 'active' : ''}`} onClick={() => navigate('/categorias')}>
             <span>◈</span>
             Categorias
           </button>
@@ -66,7 +90,7 @@ function Layout() {
           </button>
 
           <button
-            className="nav-item"
+            className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`}
             onClick={() => navigate('/settings')}
           >
             <span>♟</span>
@@ -110,7 +134,7 @@ function Layout() {
             </span>
 
             <h2>
-              Dashboard
+              {paginaAtual}
             </h2>
           </div>
 
@@ -139,6 +163,7 @@ function Layout() {
 
 
         {/* CONTEÚDO */}
+        {location.pathname === '/' ? (
         <main className="dashboard">
 
           <section className="welcome-section">
@@ -176,7 +201,7 @@ function Layout() {
                 </span>
 
                 <strong>
-                  0
+                  {quantidadeProdutos ?? '...'}
                 </strong>
               </div>
 
@@ -323,6 +348,11 @@ function Layout() {
           </section>
 
         </main>
+        ) : (
+          <div className="page-content">
+            <Outlet />
+          </div>
+        )}
 
       </div>
 

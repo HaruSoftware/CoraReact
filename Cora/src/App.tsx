@@ -4,6 +4,8 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import Layout from './components/Layout'
 import SettingsPage from './pages/SettingsPage'
+import ProductsPage from './pages/ProductsPage'
+import CategoriesPage from './pages/CategoriesPage'
 
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ToastProvider } from './contexts/ToastContext'
@@ -36,14 +38,11 @@ function AppContent() {
         element={
           usuario ? <Layout /> : <Navigate to="/login" replace />
         }
-      />
-
-      <Route
-        path="/settings"
-        element={
-          usuario ? <SettingsPage /> : <Navigate to="/login" replace />
-        }
-      />
+      >
+        <Route path="settings" element={<SettingsPage />} />
+        <Route path="produtos" element={<ProductsPage />} />
+        <Route path="categorias" element={<CategoriesPage />} />
+      </Route>
 
       <Route
         path="*"
