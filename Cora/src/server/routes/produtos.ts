@@ -11,7 +11,9 @@ router.get('/', autenticar, async (req, res) => {
     const id_conta = request.usuario!.id_conta
 
     const result = await pool.query(
-      `SELECT id_produto, id_conta, nome, descricao, preco, estoque, id_categoria
+            `SELECT id_produto, id_conta, id_categoria, nome, descricao,
+              codigo_barras, codigo_interno, preco, estoque, estoque_minimo,
+              unidade_medida, ativo, data_cadastro, data_atualizacao
       FROM produto
       WHERE id_conta = $1
       ORDER BY id_produto`,
@@ -34,9 +36,14 @@ router.post('/', autenticar, async (req, res) => {
     const {
       nome,
       descricao,
+      codigo_barras,
+      codigo_interno,
       preco,
       estoque,
-      id_categoria
+      estoque_minimo,
+      unidade_medida,
+      ativo,
+      id_categoria,
     } = req.body
 
     const request = req as AuthRequest
@@ -46,11 +53,13 @@ router.post('/', autenticar, async (req, res) => {
       !nome ||
       preco === undefined ||
       estoque === undefined ||
+      estoque_minimo === undefined ||
+      !unidade_medida ||
       !id_categoria
     ) {
       return res.status(400).json({
         success: false,
-        message: 'Nome, preço, estoque e categoria são obrigatórios.',
+        message: 'Nome, preço, estoque, estoque mínimo, unidade e categoria são obrigatórios.',
       })
     }
 
@@ -69,24 +78,50 @@ router.post('/', autenticar, async (req, res) => {
       })
     }
 
+    const unidade = await pool.query(
+      `SELECT id_unidade_medida
+       FROM unidade_medida
+       WHERE id_conta = $1 AND codigo = $2 AND ativo = TRUE`,
+      [id_conta, String(unidade_medida).trim().toUpperCase()]
+    )
+
+    if (unidade.rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Unidade de medida não encontrada ou está bloqueada.',
+      })
+    }
+
     const result = await pool.query(
       `INSERT INTO produto (
         id_conta,
+        id_categoria,
         nome,
         descricao,
+        codigo_barras,
+        codigo_interno,
         preco,
         estoque,
-        id_categoria
+        estoque_minimo,
+        String(unidade_medida).trim().toUpperCase(),
+        ativo
       )
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id_produto, id_conta, nome, descricao, preco, estoque, id_categoria`,
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      RETURNING id_produto, id_conta, id_categoria, nome, descricao,
+                codigo_barras, codigo_interno, preco, estoque, estoque_minimo,
+                unidade_medida, ativo, data_cadastro, data_atualizacao`,
       [
         id_conta,
+        id_categoria,
         nome,
         descricao,
+        codigo_barras || null,
+        codigo_interno || null,
         preco,
         estoque,
-        id_categoria
+        estoque_minimo,
+        unidade_medida,
+        ativo === undefined ? true : ativo
       ]
     )
 
@@ -108,9 +143,14 @@ router.put('/:id', autenticar, async (req, res) => {
     const {
       nome,
       descricao,
+      codigo_barras,
+      codigo_interno,
       preco,
       estoque,
-      id_categoria
+      estoque_minimo,
+      unidade_medida,
+      ativo,
+      id_categoria,
     } = req.body
 
     const request = req as AuthRequest
@@ -120,11 +160,13 @@ router.put('/:id', autenticar, async (req, res) => {
       !nome ||
       preco === undefined ||
       estoque === undefined ||
+      estoque_minimo === undefined ||
+      !unidade_medida ||
       !id_categoria
     ) {
       return res.status(400).json({
         success: false,
-        message: 'Nome, preço, estoque e categoria são obrigatórios.',
+        message: 'Nome, preço, estoque, estoque mínimo, unidade e categoria são obrigatórios.',
       })
     }
 
@@ -143,22 +185,49 @@ router.put('/:id', autenticar, async (req, res) => {
       })
     }
 
+    const unidade = await pool.query(
+      `SELECT id_unidade_medida
+       FROM unidade_medida
+       WHERE id_conta = $1 AND codigo = $2 AND ativo = TRUE`,
+      [id_conta, String(unidade_medida).trim().toUpperCase()]
+    )
+
+    if (unidade.rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Unidade de medida não encontrada ou está bloqueada.',
+      })
+    }
+
     const result = await pool.query(
       `UPDATE produto
-       SET nome = $1,
-           descricao = $2,
-           preco = $3,
-           estoque = $4,
-           id_categoria = $5
-       WHERE id_produto = $6
-       AND id_conta = $7
-       RETURNING id_produto, id_conta, nome, descricao, preco, estoque, id_categoria`,
+       SET id_categoria = $1,
+           nome = $2,
+           descricao = $3,
+           codigo_barras = $4,
+           codigo_interno = $5,
+           preco = $6,
+           estoque = $7,
+           estoque_minimo = $8,
+           unidade_medida = $9,
+           ativo = $10,
+           data_atualizacao = CURRENT_TIMESTAMP
+       WHERE id_produto = $11
+       AND id_conta = $12
+       RETURNING id_produto, id_conta, id_categoria, nome, descricao,
+                 codigo_barras, codigo_interno, preco, estoque, estoque_minimo,
+                 unidade_medida, ativo, data_cadastro, data_atualizacao`,
       [
+        id_categoria,
         nome,
         descricao,
+        codigo_barras || null,
+        codigo_interno || null,
         preco,
         estoque,
-        id_categoria,
+        estoque_minimo,
+        String(unidade_medida).trim().toUpperCase(),
+        ativo === undefined ? true : ativo,
         id,
         id_conta
       ]

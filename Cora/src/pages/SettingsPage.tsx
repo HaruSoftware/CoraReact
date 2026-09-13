@@ -9,6 +9,7 @@ import {
   FiTrash2,
   FiPlus,
   FiX,
+  FiBox,
 } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
@@ -21,6 +22,13 @@ type Usuario = {
   id_conta: number
   nome: string
   email: string
+}
+
+type UnidadeMedida = {
+  id_unidade_medida: number
+  codigo: string
+  nome: string
+  ativo: boolean
 }
 
 function SettingsPage() {
@@ -39,6 +47,10 @@ function SettingsPage() {
   // Estados dos Usuários
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
   const [carregandoUsuarios, setCarregandoUsuarios] = useState(true)
+  const [unidades, setUnidades] = useState<UnidadeMedida[]>([])
+  const [novoCodigoUnidade, setNovoCodigoUnidade] = useState('')
+  const [novoNomeUnidade, setNovoNomeUnidade] = useState('')
+  const [salvandoUnidade, setSalvandoUnidade] = useState(false)
 
   // Estados dos Modais de Usuário
   const [modalNovoUsuarioAberto, setModalNovoUsuarioAberto] = useState(false)
@@ -65,9 +77,10 @@ function SettingsPage() {
   async function carregarDados() {
     try {
       setCarregandoUsuarios(true)
-      const [contaData, usuariosData] = await Promise.all([
+      const [contaData, usuariosData, unidadesData] = await Promise.all([
         api('/contas/me'),
         api('/usuarios'),
+        api('/unidades-medida'),
       ])
 
       setNome(contaData.conta.nome)
@@ -76,6 +89,7 @@ function SettingsPage() {
       setEmailOriginal(contaData.conta.email)
 
       setUsuarios(Array.isArray(usuariosData) ? usuariosData : [])
+      setUnidades(Array.isArray(unidadesData) ? unidadesData : [])
     } catch (error: any) {
       console.error('Erro ao carregar configurações:', error)
       toast.error('Erro ao carregar dados da conta e usuários.')
@@ -87,6 +101,42 @@ function SettingsPage() {
   useEffect(() => {
     carregarDados()
   }, [])
+
+  async function criarUnidade() {
+    if (!novoCodigoUnidade.trim() || !novoNomeUnidade.trim()) {
+      toast.warning('Informe o código e o nome da unidade.')
+      return
+    }
+
+    try {
+      setSalvandoUnidade(true)
+      const unidade = await api('/unidades-medida', {
+        method: 'POST',
+        body: JSON.stringify({ codigo: novoCodigoUnidade, nome: novoNomeUnidade }),
+      })
+      setUnidades((atuais) => [...atuais, unidade].sort((a, b) => Number(b.ativo) - Number(a.ativo) || a.codigo.localeCompare(b.codigo)))
+      setNovoCodigoUnidade('')
+      setNovoNomeUnidade('')
+      toast.success('Unidade de medida adicionada.')
+    } catch (error: any) {
+      toast.error(error.message || 'Não foi possível adicionar a unidade.')
+    } finally {
+      setSalvandoUnidade(false)
+    }
+  }
+
+  async function alternarUnidade(unidade: UnidadeMedida) {
+    try {
+      const atualizada = await api(`/unidades-medida/${unidade.id_unidade_medida}`, {
+        method: 'PUT',
+        body: JSON.stringify({ ativo: !unidade.ativo }),
+      })
+      setUnidades((atuais) => atuais.map((item) => item.id_unidade_medida === atualizada.id_unidade_medida ? atualizada : item))
+      toast.success(atualizada.ativo ? 'Unidade liberada para uso.' : 'Unidade bloqueada.')
+    } catch (error: any) {
+      toast.error(error.message || 'Não foi possível atualizar a unidade.')
+    }
+  }
 
   // Salvar dados da Conta
   async function salvarConta() {
@@ -452,6 +502,58 @@ function SettingsPage() {
                 })}
               </div>
             )}
+          </div>
+        </section>
+
+        {/* SEÇÃO: UNIDADES DE MEDIDA */}
+        <section className="settings-section">
+          <div className="section-heading">
+            <div className="section-icon">
+              <FiBox />
+            </div>
+            <div>
+              <h2>Unidades de medida</h2>
+              <p>Defina quais unidades podem ser usadas nos produtos.</p>
+            </div>
+          </div>
+
+          <div className="settings-card units-card">
+            <div className="unit-create-form">
+              <input
+                className="settings-input unit-code-input"
+                value={novoCodigoUnidade}
+                onChange={(event) => setNovoCodigoUnidade(event.target.value.toUpperCase())}
+                placeholder="Código (ex.: CX)"
+                maxLength={10}
+              />
+              <input
+                className="settings-input"
+                value={novoNomeUnidade}
+                onChange={(event) => setNovoNomeUnidade(event.target.value)}
+                placeholder="Nome (ex.: Caixa)"
+                maxLength={80}
+              />
+              <button className="primary-button" onClick={criarUnidade} disabled={salvandoUnidade}>
+                <FiPlus /> {salvandoUnidade ? 'Adicionando...' : 'Adicionar'}
+              </button>
+            </div>
+
+            <div className="units-list">
+              {unidades.map((unidade) => (
+                <div className="unit-item" key={unidade.id_unidade_medida}>
+                  <div>
+                    <strong>{unidade.codigo}</strong>
+                    <span>{unidade.nome}</span>
+                  </div>
+                  <button
+                    className={unidade.ativo ? 'unit-toggle active' : 'unit-toggle'}
+                    onClick={() => alternarUnidade(unidade)}
+                  >
+                    {unidade.ativo ? 'Liberada' : 'Bloqueada'}
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 

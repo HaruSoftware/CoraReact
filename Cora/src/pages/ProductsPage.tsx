@@ -15,11 +15,18 @@ import './ProductsPage.css'
 type Produto = {
   id_produto: number
   id_conta: number
+  id_categoria: number
   nome: string
   descricao: string | null
+  codigo_barras: string | null
+  codigo_interno: string | null
   preco: number | string
   estoque: number
-  id_categoria: number
+  estoque_minimo: number
+  unidade_medida: string
+  ativo: boolean
+  data_cadastro: string
+  data_atualizacao: string
 }
 
 type Categoria = {
@@ -27,19 +34,36 @@ type Categoria = {
   nome: string
 }
 
+type UnidadeMedida = {
+  id_unidade_medida: number
+  codigo: string
+  nome: string
+  ativo: boolean
+}
+
 type ProdutoForm = {
   nome: string
   descricao: string
+  codigo_barras: string
+  codigo_interno: string
   preco: string
   estoque: string
+  estoque_minimo: string
+  unidade_medida: string
+  ativo: boolean
   id_categoria: string
 }
 
 const formularioInicial: ProdutoForm = {
   nome: '',
   descricao: '',
+  codigo_barras: '',
+  codigo_interno: '',
   preco: '',
   estoque: '0',
+  estoque_minimo: '0',
+  unidade_medida: 'UN',
+  ativo: true,
   id_categoria: '',
 }
 
@@ -55,9 +79,11 @@ function ProductsPage() {
   const { toast } = useToast()
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [categorias, setCategorias] = useState<Categoria[]>([])
+  const [unidades, setUnidades] = useState<UnidadeMedida[]>([])
   const [busca, setBusca] = useState('')
   const [produtoSelecionado, setProdutoSelecionado] = useState<Produto | null>(null)
   const [modalCriacaoAberto, setModalCriacaoAberto] = useState(false)
+  const [produtoEditando, setProdutoEditando] = useState<Produto | null>(null)
   const [formulario, setFormulario] = useState<ProdutoForm>(formularioInicial)
   const [carregando, setCarregando] = useState(true)
   const [salvando, setSalvando] = useState(false)
@@ -70,9 +96,11 @@ function ProductsPage() {
           api('/produtos'),
           api('/categorias'),
         ])
+        const unidadesData = await api('/unidades-medida')
 
         setProdutos(Array.isArray(produtosData) ? produtosData : [])
         setCategorias(Array.isArray(categoriasData) ? categoriasData : [])
+        setUnidades(Array.isArray(unidadesData) ? unidadesData : [])
       } catch (error: unknown) {
         console.error('Erro ao carregar produtos:', error)
         toast.error(error instanceof Error ? error.message : 'Erro ao carregar produtos.')
@@ -94,7 +122,7 @@ function ProductsPage() {
         (item) => item.id_categoria === produto.id_categoria
       )
 
-      return [produto.nome, produto.descricao, categoria?.nome]
+      return [produto.nome, produto.descricao, produto.codigo_barras, produto.codigo_interno, categoria?.nome]
         .filter(Boolean)
         .some((valor) => String(valor).toLowerCase().includes(termo))
     })
@@ -104,15 +132,33 @@ function ProductsPage() {
     setFormulario({
       ...formularioInicial,
       id_categoria: categorias[0] ? String(categorias[0].id_categoria) : '',
+      unidade_medida: unidades.find((unidade) => unidade.ativo)?.codigo || 'UN',
     })
     setModalCriacaoAberto(true)
+  }
+
+  function abrirEdicao(produto: Produto) {
+    setProdutoSelecionado(null)
+    setProdutoEditando(produto)
+    setFormulario({
+      nome: produto.nome,
+      descricao: produto.descricao || '',
+      codigo_barras: produto.codigo_barras || '',
+      codigo_interno: produto.codigo_interno || '',
+      preco: String(produto.preco),
+      estoque: String(produto.estoque),
+      estoque_minimo: String(produto.estoque_minimo),
+      unidade_medida: produto.unidade_medida,
+      ativo: produto.ativo,
+      id_categoria: String(produto.id_categoria),
+    })
   }
 
   function atualizarCampo(campo: keyof ProdutoForm, valor: string) {
     setFormulario((atual) => ({ ...atual, [campo]: valor }))
   }
 
-  async function handleCriarProduto(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSalvarProduto(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     if (!formulario.nome.trim() || !formulario.preco || !formulario.id_categoria) {
@@ -122,34 +168,50 @@ function ProductsPage() {
 
     const preco = Number(formulario.preco.replace(',', '.'))
     const estoque = Number(formulario.estoque)
+    const estoqueMinimo = Number(formulario.estoque_minimo)
 
-    if (!Number.isFinite(preco) || preco < 0 || !Number.isInteger(estoque) || estoque < 0) {
-      toast.warning('Informe um preço válido e um estoque inteiro não negativo.')
+    if (!Number.isFinite(preco) || preco < 0 || !Number.isInteger(estoque) || estoque < 0 || !Number.isInteger(estoqueMinimo) || estoqueMinimo < 0) {
+      toast.warning('Informe preço, estoque e estoque mínimo válidos.')
       return
     }
 
     try {
       setSalvando(true)
-      const novoProduto = await api('/produtos', {
-        method: 'POST',
+      const produtoSalvo = await api(produtoEditando ? `/produtos/${produtoEditando.id_produto}` : '/produtos', {
+        method: produtoEditando ? 'PUT' : 'POST',
         body: JSON.stringify({
           nome: formulario.nome.trim(),
           descricao: formulario.descricao.trim() || null,
+          codigo_barras: formulario.codigo_barras.trim() || null,
+          codigo_interno: formulario.codigo_interno.trim() || null,
           preco,
           estoque,
+          estoque_minimo: estoqueMinimo,
+          unidade_medida: formulario.unidade_medida.trim().toUpperCase(),
+          ativo: formulario.ativo,
           id_categoria: Number(formulario.id_categoria),
         }),
       })
 
-      setProdutos((atuais) => [...atuais, novoProduto])
+      setProdutos((atuais) => produtoEditando
+        ? atuais.map((produto) => produto.id_produto === produtoEditando.id_produto ? produtoSalvo : produto)
+        : [...atuais, produtoSalvo])
       setModalCriacaoAberto(false)
+      setProdutoEditando(null)
       setFormulario(formularioInicial)
-      toast.success('Produto criado com sucesso!')
+      toast.success(produtoEditando ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!')
     } catch (error: unknown) {
       console.error('Erro ao criar produto:', error)
       toast.error(error instanceof Error ? error.message : 'Erro ao criar produto.')
     } finally {
       setSalvando(false)
+    }
+  }
+
+  function fecharFormulario() {
+    if (!salvando) {
+      setModalCriacaoAberto(false)
+      setProdutoEditando(null)
     }
   }
 
@@ -217,6 +279,10 @@ function ProductsPage() {
                 </div>
                 <h2>{produto.nome}</h2>
                 <p>{produto.descricao || 'Este produto ainda não possui uma descrição.'}</p>
+                <div className="product-card-codes">
+                  {produto.codigo_interno && <span>Cód. {produto.codigo_interno}</span>}
+                  {produto.estoque <= produto.estoque_minimo && <span className="product-low-stock">Estoque baixo</span>}
+                </div>
                 <div className="product-card-footer">
                   <div>
                     <span>Preço</span>
@@ -224,7 +290,7 @@ function ProductsPage() {
                   </div>
                   <div>
                     <span>Estoque</span>
-                    <strong>{produto.estoque} un.</strong>
+                    <strong>{produto.estoque} {produto.unidade_medida}</strong>
                   </div>
                   <button
                     className="product-view-button"
@@ -255,25 +321,33 @@ function ProductsPage() {
             <div className="product-detail-grid">
               <div><span>Categoria</span><strong>{nomeCategoria(produtoSelecionado.id_categoria)}</strong></div>
               <div><span>Preço</span><strong>{formatarPreco(produtoSelecionado.preco)}</strong></div>
-              <div><span>Estoque disponível</span><strong>{produtoSelecionado.estoque} unidades</strong></div>
+              <div><span>Estoque disponível</span><strong>{produtoSelecionado.estoque} {produtoSelecionado.unidade_medida}</strong></div>
+              <div><span>Estoque mínimo</span><strong>{produtoSelecionado.estoque_minimo} {produtoSelecionado.unidade_medida}</strong></div>
+              <div><span>Unidade</span><strong>{produtoSelecionado.unidade_medida}</strong></div>
+              <div><span>Status</span><strong>{produtoSelecionado.ativo ? 'Ativo' : 'Inativo'}</strong></div>
+              <div><span>Código interno</span><strong>{produtoSelecionado.codigo_interno || 'Não informado'}</strong></div>
+              <div><span>Código de barras</span><strong>{produtoSelecionado.codigo_barras || 'Não informado'}</strong></div>
             </div>
             <div className="product-description">
               <span>Descrição</span>
               <p>{produtoSelecionado.descricao || 'Nenhuma descrição informada.'}</p>
             </div>
+            <div className="products-form-actions">
+              <button className="products-secondary-button" onClick={() => abrirEdicao(produtoSelecionado)}>Editar produto</button>
+            </div>
           </div>
         </div>
       )}
 
-      {modalCriacaoAberto && (
-        <div className="products-modal-overlay" onClick={() => !salvando && setModalCriacaoAberto(false)}>
-          <form className="products-modal products-form-modal" onSubmit={handleCriarProduto} onClick={(event) => event.stopPropagation()}>
+      {(modalCriacaoAberto || produtoEditando) && (
+        <div className="products-modal-overlay" onClick={fecharFormulario}>
+          <form className="products-modal products-form-modal" onSubmit={handleSalvarProduto} onClick={(event) => event.stopPropagation()}>
             <div className="products-modal-header">
               <div>
-                <span className="products-eyebrow">Novo cadastro</span>
-                <h2>Criar produto</h2>
+                <span className="products-eyebrow">{produtoEditando ? 'Atualização' : 'Novo cadastro'}</span>
+                <h2>{produtoEditando ? 'Editar produto' : 'Criar produto'}</h2>
               </div>
-              <button type="button" className="products-close-button" onClick={() => setModalCriacaoAberto(false)} title="Fechar" disabled={salvando}>
+              <button type="button" className="products-close-button" onClick={fecharFormulario} title="Fechar" disabled={salvando}>
                 <FiX />
               </button>
             </div>
@@ -286,6 +360,14 @@ function ProductsPage() {
               <label>
                 Nome do produto
                 <input value={formulario.nome} onChange={(event) => atualizarCampo('nome', event.target.value)} placeholder="Ex.: Café especial" required />
+              </label>
+              <label>
+                Código interno
+                <input value={formulario.codigo_interno} onChange={(event) => atualizarCampo('codigo_interno', event.target.value)} placeholder="Ex.: CAF-001" maxLength={50} />
+              </label>
+              <label>
+                Código de barras
+                <input inputMode="numeric" value={formulario.codigo_barras} onChange={(event) => atualizarCampo('codigo_barras', event.target.value)} placeholder="EAN / GTIN" maxLength={14} />
               </label>
               <label>
                 Categoria
@@ -304,15 +386,35 @@ function ProductsPage() {
                 Estoque inicial
                 <input type="number" min="0" step="1" value={formulario.estoque} onChange={(event) => atualizarCampo('estoque', event.target.value)} required />
               </label>
+              <label>
+                Estoque mínimo
+                <input type="number" min="0" step="1" value={formulario.estoque_minimo} onChange={(event) => atualizarCampo('estoque_minimo', event.target.value)} required />
+              </label>
+              <label>
+                Unidade de medida
+                <span className="products-select-wrap">
+                  <select value={formulario.unidade_medida} onChange={(event) => atualizarCampo('unidade_medida', event.target.value)} required>
+                    {unidades.map((unidade) => (
+                      <option key={unidade.id_unidade_medida} value={unidade.codigo} disabled={!unidade.ativo}>
+                        {unidade.codigo} - {unidade.nome}{!unidade.ativo ? ' (bloqueada)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </span>
+              </label>
+              <label className="products-checkbox-label">
+                <input type="checkbox" checked={formulario.ativo} onChange={(event) => setFormulario((atual) => ({ ...atual, ativo: event.target.checked }))} />
+                Produto ativo
+              </label>
               <label className="products-form-full-width">
                 Descrição
                 <textarea value={formulario.descricao} onChange={(event) => atualizarCampo('descricao', event.target.value)} placeholder="Descreva o produto brevemente" rows={4} />
               </label>
             </div>
             <div className="products-form-actions">
-              <button type="button" className="products-secondary-button" onClick={() => setModalCriacaoAberto(false)} disabled={salvando}>Cancelar</button>
+              <button type="button" className="products-secondary-button" onClick={fecharFormulario} disabled={salvando}>Cancelar</button>
               <button type="submit" className="products-primary-button" disabled={salvando || categorias.length === 0}>
-                {salvando ? 'Salvando...' : 'Criar produto'}
+                {salvando ? 'Salvando...' : produtoEditando ? 'Salvar alterações' : 'Criar produto'}
               </button>
             </div>
           </form>

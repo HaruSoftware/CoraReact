@@ -179,6 +179,74 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
+.unit-create-form {
+  display: grid;
+  grid-template-columns: 150px 1fr auto;
+  gap: 10px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.unit-code-input {
+  max-width: none;
+}
+
+.units-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 18px;
+}
+
+.unit-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.unit-item > div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.unit-item strong {
+  color: #111827;
+  font-size: 13px;
+}
+
+.unit-item span {
+  overflow: hidden;
+  color: #6b7280;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unit-toggle {
+  flex: 0 0 auto;
+  min-width: 82px;
+  padding: 6px 9px;
+  border: 1px solid #fcd34d;
+  border-radius: 999px;
+  background: #fffbeb;
+  color: #92400e;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.unit-toggle.active {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+  color: #047857;
+}
+
 /* =========================
    BOTÕES E AÇÕES
 ========================= */
@@ -748,6 +816,15 @@
   }
 
   .user-form-actions button {
+    width: 100%;
+  }
+
+  .unit-create-form,
+  .units-list {
+    grid-template-columns: 1fr;
+  }
+
+  .unit-create-form .primary-button {
     width: 100%;
   }
 }

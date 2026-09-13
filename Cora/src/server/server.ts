@@ -11,6 +11,7 @@ import itensVendaRouter from './routes/itensVenda.js'
 import authRouter from './routes/auth.js'
 import { autenticar, type AuthRequest } from './middleware/auth.js'  
 import googleAuthRouter from './routes/googleAuth.js'
+import unidadesMedidaRouter from './routes/unidadesMedida.js'
 import cookieParser from 'cookie-parser'
 
 const app = express()
@@ -27,6 +28,7 @@ app.use(cookieParser())
 app.use(express.json())
 
 app.use('/api/categorias', categoriasRouter)
+app.use('/api/unidades-medida', unidadesMedidaRouter)
 app.use('/api/contas', contasRouter)
 app.use('/api/usuarios', usuariosRouter)
 app.use('/api/produtos', produtosRouter)

@@ -67,7 +67,7 @@ graph TD
    - Zona de perigo para exclusão permanente da conta com confirmação explícita.
 
 3. **Módulo de Produtos e Categorias**
-   - Cadastro, listagem, atualização e exclusão de produtos (nome, descrição, preço unitário e quantidade em estoque).
+   - Cadastro, listagem, atualização e exclusão de produtos (nome, descrição, códigos de barras e interno, preço unitário, unidade de medida, estoque, estoque mínimo e status ativo).
    - Organização de itens por categorias de produtos.
 
 4. **Módulo de Clientes**
