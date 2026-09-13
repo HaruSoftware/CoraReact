@@ -13,11 +13,18 @@
 
 - **id_produto** (PK)
 - **id_conta** (FK)
+- **id_categoria** (FK)
 - nome
 - descricao
+- codigo_barras (opcional)
+- codigo_interno (opcional)
 - preco
 - estoque
-- **id_categoria** (FK)
+- estoque_minimo
+- unidade_medida
+- ativo
+- data_cadastro
+- data_atualizacao
 
 ---
 
@@ -26,6 +33,17 @@
 - **id_categoria** (PK)
 - **id_conta** (FK)
 - nome
+
+---
+
+## UNIDADE_MEDIDA
+
+- **id_unidade_medida** (PK)
+- **id_conta** (FK)
+- codigo
+- nome
+- ativo
+- data_cadastro
 
 ---
 
@@ -91,6 +109,12 @@ Cada produto pertence a uma única conta.
 Uma conta possui várias categorias.
 
 Cada categoria pertence a uma única conta.
+
+### CONTA 1:N UNIDADE_MEDIDA
+
+Uma conta possui várias unidades de medida configuráveis.
+
+Cada unidade de medida pertence a uma única conta.
 
 ### CONTA 1:N CLIENTE
 
