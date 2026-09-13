@@ -5,6 +5,7 @@ import {
   FiEye,
   FiPlus,
   FiSearch,
+  FiSliders,
   FiX,
 } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
@@ -81,6 +82,11 @@ function ProductsPage() {
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [unidades, setUnidades] = useState<UnidadeMedida[]>([])
   const [busca, setBusca] = useState('')
+  const [filtroCategoria, setFiltroCategoria] = useState('')
+  const [filtroUnidade, setFiltroUnidade] = useState('')
+  const [filtroStatus, setFiltroStatus] = useState('')
+  const [filtroEstoque, setFiltroEstoque] = useState('')
+  const [filtrosAbertos, setFiltrosAbertos] = useState(false)
   const [produtoSelecionado, setProdutoSelecionado] = useState<Produto | null>(null)
   const [modalCriacaoAberto, setModalCriacaoAberto] = useState(false)
   const [produtoEditando, setProdutoEditando] = useState<Produto | null>(null)
@@ -115,18 +121,36 @@ function ProductsPage() {
   const produtosFiltrados = useMemo(() => {
     const termo = busca.trim().toLowerCase()
 
-    if (!termo) return produtos
-
     return produtos.filter((produto) => {
       const categoria = categorias.find(
         (item) => item.id_categoria === produto.id_categoria
       )
 
-      return [produto.nome, produto.descricao, produto.codigo_barras, produto.codigo_interno, categoria?.nome]
+      const correspondeTexto = !termo || [produto.nome, produto.descricao, produto.codigo_barras, produto.codigo_interno, categoria?.nome]
         .filter(Boolean)
         .some((valor) => String(valor).toLowerCase().includes(termo))
+
+      const correspondeCategoria = !filtroCategoria || String(produto.id_categoria) === filtroCategoria
+      const correspondeUnidade = !filtroUnidade || produto.unidade_medida === filtroUnidade
+      const correspondeStatus = !filtroStatus || (filtroStatus === 'ativo' ? produto.ativo : !produto.ativo)
+      const correspondeEstoque = !filtroEstoque
+        || (filtroEstoque === 'baixo' && produto.estoque <= produto.estoque_minimo)
+        || (filtroEstoque === 'disponivel' && produto.estoque > produto.estoque_minimo)
+
+      return correspondeTexto && correspondeCategoria && correspondeUnidade && correspondeStatus && correspondeEstoque
     })
-  }, [busca, categorias, produtos])
+  }, [busca, categorias, filtroCategoria, filtroEstoque, filtroStatus, filtroUnidade, produtos])
+
+  const existemFiltros = Boolean(busca || filtroCategoria || filtroUnidade || filtroStatus || filtroEstoque)
+  const quantidadeFiltros = [filtroCategoria, filtroUnidade, filtroStatus, filtroEstoque].filter(Boolean).length
+
+  function limparFiltros() {
+    setBusca('')
+    setFiltroCategoria('')
+    setFiltroUnidade('')
+    setFiltroStatus('')
+    setFiltroEstoque('')
+  }
 
   function abrirCriacao() {
     setFormulario({
@@ -238,20 +262,60 @@ function ProductsPage() {
       <main className="products-content">
         <section className="products-toolbar">
           <div className="products-count">
-            <strong>{produtos.length}</strong>
-            <span>{produtos.length === 1 ? 'produto cadastrado' : 'produtos cadastrados'}</span>
+            <strong>{produtosFiltrados.length}</strong>
+            <span>{produtosFiltrados.length === 1 ? 'produto encontrado' : 'produtos encontrados'}</span>
           </div>
-          <label className="products-search">
-            <FiSearch />
-            <input
-              type="search"
-              value={busca}
-              onChange={(event) => setBusca(event.target.value)}
-              placeholder="Buscar produto ou categoria"
-              aria-label="Buscar produto ou categoria"
-            />
-          </label>
+          <div className="products-search-controls">
+            <label className="products-search">
+              <FiSearch />
+              <input
+                type="search"
+                value={busca}
+                onChange={(event) => setBusca(event.target.value)}
+                placeholder="Buscar produto ou categoria"
+                aria-label="Buscar produto ou categoria"
+              />
+            </label>
+            <button
+              type="button"
+              className={filtrosAbertos || quantidadeFiltros ? 'products-filter-button active' : 'products-filter-button'}
+              onClick={() => setFiltrosAbertos((aberto) => !aberto)}
+              aria-expanded={filtrosAbertos}
+            >
+              <FiSliders /> Filtros{quantidadeFiltros > 0 && ` (${quantidadeFiltros})`}
+            </button>
+          </div>
         </section>
+
+        {filtrosAbertos && <section className="products-filters" aria-label="Filtros de produtos">
+          <span className="products-filter-select-wrap">
+            <select value={filtroCategoria} onChange={(event) => setFiltroCategoria(event.target.value)} aria-label="Filtrar por categoria">
+              <option value="">Todas as categorias</option>
+              {categorias.map((categoria) => <option key={categoria.id_categoria} value={categoria.id_categoria}>{categoria.nome}</option>)}
+            </select>
+          </span>
+          <span className="products-filter-select-wrap">
+            <select value={filtroUnidade} onChange={(event) => setFiltroUnidade(event.target.value)} aria-label="Filtrar por unidade">
+              <option value="">Todas as unidades</option>
+              {unidades.map((unidade) => <option key={unidade.id_unidade_medida} value={unidade.codigo}>{unidade.codigo} - {unidade.nome}</option>)}
+            </select>
+          </span>
+          <span className="products-filter-select-wrap">
+            <select value={filtroStatus} onChange={(event) => setFiltroStatus(event.target.value)} aria-label="Filtrar por status">
+              <option value="">Todos os status</option>
+              <option value="ativo">Ativos</option>
+              <option value="inativo">Inativos</option>
+            </select>
+          </span>
+          <span className="products-filter-select-wrap">
+            <select value={filtroEstoque} onChange={(event) => setFiltroEstoque(event.target.value)} aria-label="Filtrar por estoque">
+              <option value="">Qualquer estoque</option>
+              <option value="baixo">Estoque baixo</option>
+              <option value="disponivel">Acima do mínimo</option>
+            </select>
+          </span>
+          {existemFiltros && <button className="products-clear-filters" onClick={limparFiltros}>Limpar filtros</button>}
+        </section>}
 
         {carregando ? (
           <div className="products-state">
@@ -261,9 +325,9 @@ function ProductsPage() {
         ) : produtosFiltrados.length === 0 ? (
           <div className="products-state products-empty-state">
             <div className="products-empty-icon"><FiBox /></div>
-            <strong>{busca ? 'Nenhum produto encontrado' : 'Seu catálogo está vazio'}</strong>
-            <p>{busca ? 'Tente buscar por outro nome ou categoria.' : 'Cadastre o primeiro produto para começar a organizar seu catálogo.'}</p>
-            {!busca && (
+            <strong>{existemFiltros ? 'Nenhum produto encontrado' : 'Seu catálogo está vazio'}</strong>
+            <p>{existemFiltros ? 'Ajuste os filtros para encontrar outros produtos.' : 'Cadastre o primeiro produto para começar a organizar seu catálogo.'}</p>
+            {!existemFiltros && (
               <button className="products-primary-button" onClick={abrirCriacao}>
                 <FiPlus /> Cadastrar produto
               </button>

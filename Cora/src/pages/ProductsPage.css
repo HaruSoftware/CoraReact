@@ -156,6 +156,43 @@
   color: #9ca3af;
 }
 
+.products-search-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: min(470px, 100%);
+}
+
+.products-search-controls .products-search {
+  flex: 1;
+  width: auto;
+}
+
+.products-filter-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #4b5563;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.products-filter-button:hover,
+.products-filter-button.active {
+  border-color: #9ca3af;
+  background: #f9fafb;
+  color: #111827;
+}
+
 .products-search input {
   width: 100%;
   padding: 10px 0;
@@ -164,6 +201,67 @@
   background: transparent;
   color: #111827;
   font-size: 13px;
+}
+
+.products-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.products-filters select {
+  width: 100%;
+  height: 36px;
+  padding: 0 30px 0 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: 0;
+  background: #ffffff;
+  color: #374151;
+  font: inherit;
+  font-size: 12px;
+  appearance: none;
+}
+
+.products-filter-select-wrap {
+  position: relative;
+  display: block;
+  min-width: 150px;
+}
+
+.products-filter-select-wrap::after {
+  position: absolute;
+  top: 50%;
+  right: 13px;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid #6b7280;
+  border-bottom: 1.5px solid #6b7280;
+  content: '';
+  pointer-events: none;
+  transform: translateY(-65%) rotate(45deg);
+}
+
+.products-filters select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.products-clear-filters {
+  height: 36px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .products-grid {
@@ -529,6 +627,10 @@
   .products-grid,
   .products-form-grid,
   .product-detail-grid { grid-template-columns: 1fr; }
+  .products-search-controls { width: 100%; }
+  .products-filters { align-items: stretch; }
+  .products-filter-select-wrap,
+  .products-clear-filters { width: 100%; }
   .products-modal { padding: 22px 18px; }
   .products-form-full-width { grid-column: auto; }
 }
