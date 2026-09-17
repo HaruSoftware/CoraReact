@@ -14,10 +14,13 @@ function Layout() {
   const [modalLogoutAberto, setModalLogoutAberto] = useState(false)
   const [saindo, setSaindo] = useState(false)
   const [quantidadeProdutos, setQuantidadeProdutos] = useState<number | null>(null)
+  const [quantidadeClientes, setQuantidadeClientes] = useState<number | null>(null)
   const paginaAtual = location.pathname === '/produtos'
     ? 'Produtos'
     : location.pathname === '/categorias'
       ? 'Categorias'
+    : location.pathname === '/clientes'
+      ? 'Clientes'
     : location.pathname === '/settings'
       ? 'Configurações'
       : 'Dashboard'
@@ -25,11 +28,16 @@ function Layout() {
   useEffect(() => {
     async function carregarQuantidadeProdutos() {
       try {
-        const produtos = await api('/produtos')
+        const [produtos, clientes] = await Promise.all([
+          api('/produtos'),
+          api('/clientes'),
+        ])
         setQuantidadeProdutos(Array.isArray(produtos) ? produtos.length : 0)
+        setQuantidadeClientes(Array.isArray(clientes) ? clientes.length : 0)
       } catch (error) {
         console.error('Erro ao carregar quantidade de produtos:', error)
         setQuantidadeProdutos(0)
+        setQuantidadeClientes(0)
       }
     }
 
@@ -79,7 +87,7 @@ function Layout() {
             Categorias
           </button>
 
-          <button className="nav-item">
+          <button className={`nav-item ${location.pathname === '/clientes' ? 'active' : ''}`} onClick={() => navigate('/clientes')}>
             <span>♙</span>
             Clientes
           </button>
@@ -220,7 +228,7 @@ function Layout() {
                 </span>
 
                 <strong>
-                  0
+                  {quantidadeClientes ?? '...'}
                 </strong>
               </div>
 

@@ -6,6 +6,7 @@ import Layout from './components/Layout'
 import SettingsPage from './pages/SettingsPage'
 import ProductsPage from './pages/ProductsPage'
 import CategoriesPage from './pages/CategoriesPage'
+import CustomersPage from './pages/CustomersPage'
 
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ToastProvider } from './contexts/ToastContext'
@@ -42,6 +43,7 @@ function AppContent() {
         <Route path="settings" element={<SettingsPage />} />
         <Route path="produtos" element={<ProductsPage />} />
         <Route path="categorias" element={<CategoriesPage />} />
+        <Route path="clientes" element={<CustomersPage />} />
       </Route>
 
       <Route

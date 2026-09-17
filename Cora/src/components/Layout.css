@@ -151,7 +151,8 @@
 
 .page-content > .settings-page,
 .page-content > .products-page,
-.page-content > .categories-page {
+.page-content > .categories-page,
+.page-content > .customers-page {
   min-height: 0;
   padding: 0;
 }
@@ -161,7 +162,9 @@
 .page-content .products-header,
 .page-content .products-content,
 .page-content .categories-header,
-.page-content .categories-content {
+.page-content .categories-content,
+.page-content .customers-header,
+.page-content .customers-content {
   max-width: none;
 }
 
