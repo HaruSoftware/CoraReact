@@ -8,6 +8,7 @@ export interface AuthRequest extends Request {
     id_conta: number
     nome: string
     email: string
+    tem_assinatura_ativa: boolean
   }
 }
 export async function autenticar(
@@ -48,7 +49,12 @@ export async function autenticar(
     }
 
     const result = await pool.query(
-      `SELECT id_usuario, id_conta, nome, email
+      `SELECT id_usuario, id_conta, nome, email,
+              EXISTS (
+                SELECT 1 FROM assinatura
+                WHERE assinatura.id_conta = usuario.id_conta
+                  AND assinatura.status = 'ativa'
+              ) AS tem_assinatura_ativa
        FROM usuario
        WHERE id_usuario = $1
          AND id_conta = $2`,
@@ -69,6 +75,7 @@ export async function autenticar(
       id_conta: usuario.id_conta,
       nome: usuario.nome,
       email: usuario.email,
+      tem_assinatura_ativa: usuario.tem_assinatura_ativa,
     }
 
     next()

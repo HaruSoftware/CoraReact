@@ -31,6 +31,15 @@ type UnidadeMedida = {
   ativo: boolean
 }
 
+type Assinatura = {
+  nome: string
+  status: string
+  periodicidade: string
+  valor_mensal: string | number
+  data_fim_periodo: string
+  demonstrativo: boolean
+}
+
 function SettingsPage() {
   const navigate = useNavigate()
   const { usuario: usuarioLogado, logout } = useAuth()
@@ -51,6 +60,8 @@ function SettingsPage() {
   const [novoCodigoUnidade, setNovoCodigoUnidade] = useState('')
   const [novoNomeUnidade, setNovoNomeUnidade] = useState('')
   const [salvandoUnidade, setSalvandoUnidade] = useState(false)
+  const [assinatura, setAssinatura] = useState<Assinatura | null>(null)
+  const [carregandoAssinatura, setCarregandoAssinatura] = useState(true)
 
   // Estados dos Modais de Usuário
   const [modalNovoUsuarioAberto, setModalNovoUsuarioAberto] = useState(false)
@@ -77,10 +88,11 @@ function SettingsPage() {
   async function carregarDados() {
     try {
       setCarregandoUsuarios(true)
-      const [contaData, usuariosData, unidadesData] = await Promise.all([
+      const [contaData, usuariosData, unidadesData, assinaturaData] = await Promise.all([
         api('/contas/me'),
         api('/usuarios'),
         api('/unidades-medida'),
+        api('/assinaturas/me'),
       ])
 
       setNome(contaData.conta.nome)
@@ -90,11 +102,13 @@ function SettingsPage() {
 
       setUsuarios(Array.isArray(usuariosData) ? usuariosData : [])
       setUnidades(Array.isArray(unidadesData) ? unidadesData : [])
+      setAssinatura(assinaturaData.assinatura)
     } catch (error: any) {
       console.error('Erro ao carregar configurações:', error)
       toast.error('Erro ao carregar dados da conta e usuários.')
     } finally {
       setCarregandoUsuarios(false)
+      setCarregandoAssinatura(false)
     }
   }
 
@@ -410,6 +424,55 @@ function SettingsPage() {
                   disabled={salvando}
                 >
                   {salvando ? 'Salvando...' : 'Salvar alterações'}
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="settings-section">
+          <div className="section-heading">
+            <div className="section-icon">
+              <FiBox />
+            </div>
+            <div>
+              <h2>Plano e assinatura</h2>
+              <p>Consulte o plano ativo nesta conta.</p>
+            </div>
+          </div>
+
+          <div className="settings-card">
+            {carregandoAssinatura ? (
+              <div className="loading-state"><p>Carregando assinatura...</p></div>
+            ) : assinatura ? (
+              <>
+                <div className="info-row">
+                  <span>Plano</span>
+                  <strong>{assinatura.nome}</strong>
+                </div>
+                <div className="info-row">
+                  <span>Valor mensal informado</span>
+                  <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(assinatura.valor_mensal))}</strong>
+                </div>
+                <div className="info-row">
+                  <span>Status</span>
+                  <strong>{assinatura.status === 'ativa' ? 'Ativo' : assinatura.status}</strong>
+                </div>
+                <div className="info-row">
+                  <span>Fim do período mensal</span>
+                  <strong>{new Date(`${assinatura.data_fim_periodo}T00:00:00`).toLocaleDateString('pt-BR')}</strong>
+                </div>
+                <p className="subscription-notice">
+                  {assinatura.demonstrativo
+                    ? 'Plano demonstrativo: nenhum pagamento ou renovação automática será realizado.'
+                    : 'A assinatura está ativa. Pagamentos e renovações automáticas ainda não estão habilitados.'}
+                </p>
+              </>
+            ) : (
+              <div className="subscription-empty">
+                <p>Esta conta ainda não possui um plano ativo.</p>
+                <button className="primary-button" onClick={() => navigate('/escolher-plano')}>
+                  Escolher plano
                 </button>
               </div>
             )}

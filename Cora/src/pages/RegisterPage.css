@@ -9,7 +9,7 @@
 
 .register-card {
   width: 100%;
-  max-width: 480px;
+  max-width: 760px;
   padding: 42px;
   background: #ffffff;
   border: 1px solid #e5e7eb;
@@ -245,4 +245,117 @@
     padding: 32px 24px;
     border-radius: 14px;
   }
+}
+
+.plan-picker {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.plan-picker legend {
+  margin-bottom: 6px;
+  color: #374151;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.plan-picker-caption,
+.plan-picker-disclaimer,
+.plan-picker-message,
+.plan-picker-error {
+  margin: 0 0 12px;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.plan-picker-disclaimer {
+  margin: 12px 0 0;
+  color: #8a4b08;
+}
+
+.plan-picker-error {
+  color: #b91c1c;
+}
+
+.plan-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.plan-option {
+  display: flex;
+  gap: 10px;
+  min-height: 124px;
+  padding: 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.plan-option:has(input:checked) {
+  border-color: #166534;
+  box-shadow: 0 0 0 2px rgba(22, 101, 52, 0.12);
+}
+
+.plan-option input {
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: #166534;
+  flex: 0 0 auto;
+}
+
+.plan-option-content,
+.plan-option-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.plan-option-content {
+  flex: 1;
+}
+
+.plan-option-heading strong {
+  color: #111827;
+  font-size: 15px;
+}
+
+.plan-option-heading > span {
+  color: #166534;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.plan-option-heading small {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.plan-option-description {
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.plan-demo-badge {
+  align-self: flex-start;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.google-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }

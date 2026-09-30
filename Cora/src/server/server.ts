@@ -12,7 +12,10 @@ import authRouter from './routes/auth.js'
 import { autenticar, type AuthRequest } from './middleware/auth.js'  
 import googleAuthRouter from './routes/googleAuth.js'
 import unidadesMedidaRouter from './routes/unidadesMedida.js'
+import planosRouter from './routes/planos.js'
+import assinaturasRouter from './routes/assinaturas.js'
 import cookieParser from 'cookie-parser'
+import passport from 'passport'
 
 const app = express()
 const PORT = 3000
@@ -26,9 +29,12 @@ app.use(
 
 app.use(cookieParser())
 app.use(express.json())
+app.use(passport.initialize())
 
 app.use('/api/categorias', categoriasRouter)
 app.use('/api/unidades-medida', unidadesMedidaRouter)
+app.use('/api/planos', planosRouter)
+app.use('/api/assinaturas', assinaturasRouter)
 app.use('/api/contas', contasRouter)
 app.use('/api/usuarios', usuariosRouter)
 app.use('/api/produtos', produtosRouter)

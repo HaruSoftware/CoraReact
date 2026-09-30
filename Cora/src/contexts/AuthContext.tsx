@@ -16,6 +16,7 @@ type Usuario = {
   id_conta: number
   nome: string
   email: string
+  tem_assinatura_ativa: boolean
 }
 
 type AuthContextData = {
@@ -27,9 +28,11 @@ type AuthContextData = {
     emailEmpresa: string,
     nome: string,
     email: string,
-    senha: string
+    senha: string,
+    idPlano: number
   ) => Promise<void>
   logout: () => Promise<void>
+  atualizarUsuario: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextData | undefined>(undefined)
@@ -66,12 +69,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUsuario(usuarioData.usuario)
   }
 
+  async function atualizarUsuario() {
+    const usuarioData = await api('/auth/me')
+    setUsuario(usuarioData.usuario)
+  }
+
   async function register(
     nomeEmpresa: string,
     emailEmpresa: string,
     nome: string,
     email: string,
-    senha: string
+    senha: string,
+    idPlano: number
   ) {
     await api('/auth/register', {
       method: 'POST',
@@ -81,6 +90,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         nome,
         email,
         senha,
+        id_plano: idPlano,
       }),
     })
 
@@ -103,6 +113,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         login,
         register,
         logout,
+        atualizarUsuario,
       }}
     >
       {children}

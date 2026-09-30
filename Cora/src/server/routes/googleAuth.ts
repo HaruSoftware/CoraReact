@@ -2,29 +2,86 @@ import { Router } from 'express'
 import passport from 'passport'
 import jwt from 'jsonwebtoken'
 import { pool } from '../db.js'
-import '../../config/password.js'
+import { googleOAuthConfigurado } from '../../config/password.js'
 
 const router = Router()
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
+    path: '/api/auth',
+}
+
+function exigirConfiguracaoGoogle(
+    _req: Parameters<Parameters<typeof router.get>[1]>[0],
+    res: Parameters<Parameters<typeof router.get>[1]>[1],
+    next: Parameters<Parameters<typeof router.get>[1]>[2]
+) {
+    if (!googleOAuthConfigurado) {
+        return res.status(503).json({
+            success: false,
+            message: 'Login Google indisponível. Configure GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET e BACKEND_URL.',
+        })
+    }
+
+    next()
+}
 
 // INICIAR LOGIN COM GOOGLE
 
-router.get(
-    '/google',
-    passport.authenticate('google', {
+router.get('/google', exigirConfiguracaoGoogle, async (req, res, next) => {
+    const idPlano = req.query.id_plano
+
+    if (typeof idPlano === 'string') {
+        const idPlanoNumber = Number(idPlano)
+
+        if (!Number.isInteger(idPlanoNumber) || idPlanoNumber <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'O plano selecionado é inválido.',
+            })
+        }
+
+        try {
+            const result = await pool.query(
+                'SELECT id_plano FROM plano WHERE id_plano = $1 AND ativo = TRUE',
+                [idPlanoNumber]
+            )
+
+            if (result.rows.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'O plano selecionado não está disponível.',
+                })
+            }
+
+            res.cookie('google_plan_id', idPlanoNumber, {
+                ...cookieOptions,
+                maxAge: 10 * 60 * 1000,
+            })
+        } catch (error) {
+            return next(error)
+        }
+    }
+
+    return passport.authenticate('google', {
         scope: ['profile', 'email'],
-    })
-)
+    })(req, res, next)
+})
 
 // CALLBACK DO GOOGLE
 
 router.get(
     '/google/callback',
+    exigirConfiguracaoGoogle,
     passport.authenticate('google', {
         session: false,
         failureRedirect: '/login',
     }),
     async (req, res) => {
         const client = await pool.connect()
+        const idPlano = Number(req.cookies?.google_plan_id)
+        res.clearCookie('google_plan_id', cookieOptions)
 
         try {
             const profile = req.user as {
@@ -84,6 +141,21 @@ router.get(
 
                     usuario = result.rows[0]
                 } else {
+                    if (!Number.isInteger(idPlano) || idPlano <= 0) {
+                        return res.redirect(`${process.env.FRONTEND_URL}/register?erro=plano`)
+                    }
+
+                    const planoResult = await client.query(
+                        `SELECT id_plano, preco_mensal
+                         FROM plano
+                         WHERE id_plano = $1 AND ativo = TRUE`,
+                        [idPlano]
+                    )
+
+                    if (planoResult.rows.length === 0) {
+                        return res.redirect(`${process.env.FRONTEND_URL}/register?erro=plano`)
+                    }
+
                     // 3. Primeiro login Google: cria conta + usuário
                     await client.query('BEGIN')
 
@@ -121,6 +193,15 @@ router.get(
                     )
 
                     usuario = usuarioResult.rows[0]
+
+                    await client.query(
+                        `INSERT INTO assinatura (
+                            id_conta, id_plano, valor_mensal, data_inicio, data_fim_periodo
+                         )
+                         VALUES ($1, $2, $3, CURRENT_DATE,
+                                 (CURRENT_DATE + INTERVAL '1 month')::date)`,
+                        [id_conta, idPlano, planoResult.rows[0].preco_mensal]
+                    )
 
                     await client.query('COMMIT')
                 }

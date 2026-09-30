@@ -160,6 +160,22 @@
   font-weight: 500;
 }
 
+.subscription-notice {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-left: 3px solid #d97706;
+  background: #fffbeb;
+  color: #78350f;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.subscription-empty p {
+  margin: 0 0 16px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
 .settings-input {
   width: 100%;
   max-width: 480px;

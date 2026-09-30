@@ -4,9 +4,12 @@ import { useToast } from '../contexts/ToastContext'
 import { FcGoogle } from 'react-icons/fc'
 import './RegisterPage.css'
 import { useNavigate } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
+import PlanPicker from '../components/PlanPicker'
 
 function RegisterPage() {
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
     const { register } = useAuth()
     const { toast } = useToast()
     const [nomeEmpresa, setNomeEmpresa] = useState('')
@@ -15,13 +18,25 @@ function RegisterPage() {
     const [email, setEmail] = useState('')
     const [senha, setSenha] = useState('')
     const [confirmarSenha, setConfirmarSenha] = useState('')
-    const [erro, setErro] = useState('')
+    const [idPlano, setIdPlano] = useState<number | null>(null)
+    const [erro, setErro] = useState(() =>
+        searchParams.get('erro') === 'plano'
+            ? 'Escolha um plano para concluir o cadastro com Google.'
+            : ''
+    )
     const [carregando, setCarregando] = useState(false)
 
     async function handleRegister(event: React.FormEvent) {
         event.preventDefault()
 
         setErro('')
+
+        if (!idPlano) {
+            const msg = 'Escolha um plano para continuar.'
+            setErro(msg)
+            toast.warning(msg)
+            return
+        }
 
         if (senha !== confirmarSenha) {
             const msg = 'As senhas não coincidem.'
@@ -38,10 +53,11 @@ function RegisterPage() {
                 emailEmpresa,
                 nome,
                 email,
-                senha
+                senha,
+                idPlano
             )
             toast.success('Conta criada com sucesso!')
-        } catch (error: any) {
+        } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Erro ao realizar cadastro.'
             setErro(msg)
             toast.error(msg)
@@ -183,6 +199,8 @@ function RegisterPage() {
                         </div>
                     </div>
 
+                    <PlanPicker selectedPlanId={idPlano} onSelect={setIdPlano} disabled={carregando} />
+
                     {erro && (
                         <div className="register-error">
                             {erro}
@@ -192,7 +210,7 @@ function RegisterPage() {
                     <button
                         className="register-button"
                         type="submit"
-                        disabled={carregando}
+                        disabled={carregando || !idPlano}
                     >
                         {carregando
                             ? 'Criando conta...'
@@ -205,8 +223,9 @@ function RegisterPage() {
                     <button
                         type="button"
                         className="google-button"
+                        disabled={!idPlano || carregando}
                         onClick={() => {
-                            window.location.href = 'http://localhost:3000/api/auth/google'
+                            window.location.href = `http://localhost:3000/api/auth/google?id_plano=${idPlano}`
                         }}
                     >
                         <FcGoogle className="google-icon" />

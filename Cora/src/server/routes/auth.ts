@@ -108,6 +108,7 @@ router.post('/register', async (req, res) => {
             nome,
             email,
             senha,
+            id_plano,
         } = req.body
 
         if (
@@ -115,11 +116,27 @@ router.post('/register', async (req, res) => {
             !emailEmpresa ||
             !nome ||
             !email ||
-            !senha
+            !senha ||
+            !Number.isInteger(Number(id_plano)) ||
+            Number(id_plano) <= 0
         ) {
             return res.status(400).json({
                 success: false,
-                message: 'Todos os campos são obrigatórios.',
+                message: 'Todos os campos e um plano válido são obrigatórios.',
+            })
+        }
+
+        const planoResult = await client.query(
+            `SELECT id_plano, preco_mensal
+             FROM plano
+             WHERE id_plano = $1 AND ativo = TRUE`,
+            [Number(id_plano)]
+        )
+
+        if (planoResult.rows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'O plano selecionado não está disponível.',
             })
         }
 
@@ -173,6 +190,15 @@ router.post('/register', async (req, res) => {
         )
 
         const usuario = usuarioResult.rows[0]
+
+        await client.query(
+            `INSERT INTO assinatura (
+                id_conta, id_plano, valor_mensal, data_inicio, data_fim_periodo
+             )
+             VALUES ($1, $2, $3, CURRENT_DATE,
+                     (CURRENT_DATE + INTERVAL '1 month')::date)`,
+            [id_conta, Number(id_plano), planoResult.rows[0].preco_mensal]
+        )
 
         // Confirma a transação
         await client.query('COMMIT')

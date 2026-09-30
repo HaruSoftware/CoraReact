@@ -5,6 +5,14 @@ import { api } from '../services/api'
 import './Layout.css'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { FiSettings, FiLogOut, FiX } from 'react-icons/fi'
+import {
+  FaBoxOpen,
+  FaChartPie,
+  FaShoppingCart,
+  FaTags,
+  FaUserCog,
+  FaUsers,
+} from 'react-icons/fa'
 
 function Layout() {
   const { usuario, logout } = useAuth()
@@ -21,6 +29,8 @@ function Layout() {
       ? 'Categorias'
     : location.pathname === '/clientes'
       ? 'Clientes'
+    : location.pathname === '/vendas'
+      ? 'Vendas'
     : location.pathname === '/settings'
       ? 'Configurações'
       : 'Dashboard'
@@ -73,27 +83,27 @@ function Layout() {
         <nav className="sidebar-nav">
 
           <button className={`nav-item ${location.pathname === '/' ? 'active' : ''}`} onClick={() => navigate('/')}>
-            <span>⌂</span>
+            <span className="nav-icon nav-icon-dashboard" aria-hidden="true"><FaChartPie /></span>
             Dashboard
           </button>
 
           <button className={`nav-item ${location.pathname === '/produtos' ? 'active' : ''}`} onClick={() => navigate('/produtos')}>
-            <span>▣</span>
+            <span className="nav-icon nav-icon-products" aria-hidden="true"><FaBoxOpen /></span>
             Produtos
           </button>
 
           <button className={`nav-item ${location.pathname === '/categorias' ? 'active' : ''}`} onClick={() => navigate('/categorias')}>
-            <span>◈</span>
+            <span className="nav-icon nav-icon-categories" aria-hidden="true"><FaTags /></span>
             Categorias
           </button>
 
           <button className={`nav-item ${location.pathname === '/clientes' ? 'active' : ''}`} onClick={() => navigate('/clientes')}>
-            <span>♙</span>
+            <span className="nav-icon nav-icon-customers" aria-hidden="true"><FaUsers /></span>
             Clientes
           </button>
 
-          <button className="nav-item">
-            <span>▤</span>
+          <button className={`nav-item ${location.pathname === '/vendas' ? 'active' : ''}`} onClick={() => navigate('/vendas')}>
+            <span className="nav-icon nav-icon-sales" aria-hidden="true"><FaShoppingCart /></span>
             Vendas
           </button>
 
@@ -101,7 +111,7 @@ function Layout() {
             className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`}
             onClick={() => navigate('/settings')}
           >
-            <span>♟</span>
+            <span className="nav-icon nav-icon-users" aria-hidden="true"><FaUserCog /></span>
             Usuários
           </button>
 

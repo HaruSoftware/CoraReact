@@ -103,7 +103,7 @@ router.post('/', autenticar, async (req, res) => {
         preco,
         estoque,
         estoque_minimo,
-        String(unidade_medida).trim().toUpperCase(),
+        unidade_medida,
         ativo
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
@@ -120,7 +120,7 @@ router.post('/', autenticar, async (req, res) => {
         preco,
         estoque,
         estoque_minimo,
-        unidade_medida,
+        String(unidade_medida).trim().toUpperCase(),
         ativo === undefined ? true : ativo
       ]
     )

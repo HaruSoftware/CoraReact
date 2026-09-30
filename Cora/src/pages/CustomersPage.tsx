@@ -21,6 +21,7 @@ type Cliente = {
   cpf: string
   telefone: string | null
   email: string | null
+  desconto_percentual: number | string
 }
 
 type ClienteForm = {
@@ -28,6 +29,7 @@ type ClienteForm = {
   cpf: string
   telefone: string
   email: string
+  desconto_percentual: string
 }
 
 type CampoFiltro = 'todos' | 'nome' | 'cpf' | 'telefone' | 'email'
@@ -37,6 +39,7 @@ const formularioInicial: ClienteForm = {
   cpf: '',
   telefone: '',
   email: '',
+  desconto_percentual: '0',
 }
 
 function CustomersPage() {
@@ -99,6 +102,7 @@ function CustomersPage() {
       cpf: cliente.cpf,
       telefone: cliente.telefone || '',
       email: cliente.email || '',
+      desconto_percentual: String(cliente.desconto_percentual ?? 0),
     })
     setModalAberto(true)
   }
@@ -129,6 +133,12 @@ function CustomersPage() {
       return
     }
 
+    const descontoPercentual = Number(formulario.desconto_percentual)
+    if (!Number.isFinite(descontoPercentual) || descontoPercentual < 0 || descontoPercentual > 100) {
+      toast.warning('O desconto deve estar entre 0% e 100%.')
+      return
+    }
+
     try {
       setSalvando(true)
       const clienteSalvo = await api(
@@ -140,6 +150,7 @@ function CustomersPage() {
             cpf,
             telefone: formulario.telefone.trim() || null,
             email: formulario.email.trim() || null,
+            desconto_percentual: descontoPercentual,
           }),
         }
       )
@@ -254,7 +265,7 @@ function CustomersPage() {
                   </div>
                 </div>
                 <div className="customer-contact">{cliente.email || 'Sem e-mail cadastrado'}</div>
-                <span className="customer-sales" title="Extrato de vendas em breve">0 vendas encontradas</span>
+                <span className="customer-sales">{Number(cliente.desconto_percentual)}% desconto</span>
                 <div className="customer-actions">
                   <button className="customer-action-button" onClick={() => abrirEdicao(cliente)} title={`Editar ${cliente.nome}`}><FiEdit2 /></button>
                   <button className="customer-action-button delete" onClick={() => setClienteExcluindo(cliente)} title={`Excluir ${cliente.nome}`}><FiTrash2 /></button>
@@ -280,6 +291,11 @@ function CustomersPage() {
               <label>CPF<input value={formulario.cpf} onChange={(event) => atualizarCampo('cpf', event.target.value)} maxLength={20} required /></label>
               <label>Telefone<input value={formulario.telefone} onChange={(event) => atualizarCampo('telefone', event.target.value)} maxLength={30} /></label>
               <label>E-mail<input type="email" value={formulario.email} onChange={(event) => atualizarCampo('email', event.target.value)} maxLength={150} /></label>
+              <label className="customer-discount-field">
+                Desconto padrão (%)
+                <input type="number" min="0" max="100" step="0.01" value={formulario.desconto_percentual} onChange={(event) => atualizarCampo('desconto_percentual', event.target.value)} />
+                <small>Será sugerido em cada venda e pode ser ajustado no PDV.</small>
+              </label>
             </div>
             <div className="customers-form-actions">
               <button type="button" className="customers-secondary-button" onClick={() => fecharModal()} disabled={salvando}>Cancelar</button>

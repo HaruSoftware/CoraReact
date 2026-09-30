@@ -1,0 +1,69 @@
+.plan-selection-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #f5f7fb;
+  box-sizing: border-box;
+}
+
+.plan-selection-card {
+  width: min(100%, 820px);
+  padding: 36px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 36px rgba(17, 24, 39, 0.08);
+}
+
+.plan-selection-card header {
+  margin-bottom: 28px;
+}
+
+.plan-selection-card header > span {
+  color: #166534;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.plan-selection-card h1 {
+  margin: 8px 0;
+  color: #111827;
+  font-size: 28px;
+}
+
+.plan-selection-card header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.plan-selection-submit {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 24px;
+  border: 0;
+  border-radius: 8px;
+  background: #166534;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.plan-selection-submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 520px) {
+  .plan-selection-page {
+    padding: 16px;
+  }
+
+  .plan-selection-card {
+    padding: 24px 20px;
+  }
+}
