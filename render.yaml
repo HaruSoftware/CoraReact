@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: corareact
+    runtime: node
+    buildCommand: npm install && npm --prefix Cora install && npm --prefix Cora run build
+    startCommand: npm --prefix Cora run server
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://corareact.onrender.com
+      - key: BACKEND_URL
+        value: https://corareact.onrender.com

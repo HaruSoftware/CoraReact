@@ -1,5 +1,19 @@
 # React + TypeScript + Vite
 
+## Deploy no Render
+
+O arquivo `../render.yaml` configura o frontend e a API no mesmo servico. O
+Render instala as dependencias dos dois manifests, gera `dist` e inicia o
+Express na porta fornecida pelo ambiente. Em desenvolvimento, o frontend usa
+`http://localhost:3000/api`; em producao, usa `/api` no mesmo dominio.
+
+Configure `DATABASE_URL` com a conexao PostgreSQL de producao. O blueprint
+gera `JWT_SECRET`; `FRONTEND_URL` e `BACKEND_URL` devem apontar para o dominio
+do servico. Para login Google, configure tambem `GOOGLE_CLIENT_ID` e
+`GOOGLE_CLIENT_SECRET`, e cadastre
+`https://corareact.onrender.com/api/auth/google/callback` como URI de callback
+autorizada no Google.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

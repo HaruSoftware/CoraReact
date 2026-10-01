@@ -16,9 +16,10 @@ import planosRouter from './routes/planos.js'
 import assinaturasRouter from './routes/assinaturas.js'
 import cookieParser from 'cookie-parser'
 import passport from 'passport'
+import path from 'node:path'
 
 const app = express()
-const PORT = 3000
+const PORT = Number(process.env.PORT) || 3000
 
 app.use(
   cors({
@@ -107,6 +108,25 @@ app.get('/api/setup-database', async (_req, res) => {
   }
 })
 
+if (process.env.NODE_ENV === 'production') {
+  const frontendDist = path.resolve(process.cwd(), 'dist')
+
+  app.use(express.static(frontendDist))
+  app.use((req, res, next) => {
+    if (
+      req.method !== 'GET' ||
+      req.path === '/api' ||
+      req.path.startsWith('/api/')
+    ) {
+      return next()
+    }
+
+    res.sendFile(path.join(frontendDist, 'index.html'), (error) => {
+      if (error) next(error)
+    })
+  })
+}
+
 app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`)
+  console.log(`Servidor rodando na porta ${PORT}`)
 })
