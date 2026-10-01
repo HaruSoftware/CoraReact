@@ -18,28 +18,62 @@ type Cliente = {
   id_cliente: number
   id_conta: number
   nome: string
-  cpf: string
+  tipo_pessoa: 'PF' | 'PJ'
+  documento: string
   telefone: string | null
   email: string | null
+  cep: string | null
+  logradouro: string | null
+  numero: string | null
+  complemento: string | null
+  bairro: string | null
+  cidade: string | null
+  uf: string | null
   desconto_percentual: number | string
 }
 
 type ClienteForm = {
   nome: string
-  cpf: string
+  tipo_pessoa: 'PF' | 'PJ'
+  documento: string
   telefone: string
   email: string
+  cep: string
+  logradouro: string
+  numero: string
+  complemento: string
+  bairro: string
+  cidade: string
+  uf: string
   desconto_percentual: string
 }
 
-type CampoFiltro = 'todos' | 'nome' | 'cpf' | 'telefone' | 'email'
+type CampoFiltro = 'todos' | 'nome' | 'documento' | 'telefone' | 'email'
 
 const formularioInicial: ClienteForm = {
   nome: '',
-  cpf: '',
+  tipo_pessoa: 'PF',
+  documento: '',
   telefone: '',
   email: '',
+  cep: '',
+  logradouro: '',
+  numero: '',
+  complemento: '',
+  bairro: '',
+  cidade: '',
+  uf: '',
   desconto_percentual: '0',
+}
+
+function formatarDocumento(tipoPessoa: 'PF' | 'PJ', documento: string) {
+  if (tipoPessoa === 'PF' && /^\d{11}$/.test(documento)) {
+    return `${documento.slice(0, 3)}.${documento.slice(3, 6)}.${documento.slice(6, 9)}-${documento.slice(9)}`
+  }
+  if (tipoPessoa === 'PJ' && /^[A-Z0-9]{12}\d{2}$/.test(documento)) {
+    return `${documento.slice(0, 2)}.${documento.slice(2, 5)}.${documento.slice(5, 8)}/${documento.slice(8, 12)}-${documento.slice(12)}`
+  }
+  return documento
 }
 
 function CustomersPage() {
@@ -79,7 +113,7 @@ function CustomersPage() {
     if (!termo) return clientes
 
     const valores = (cliente: Cliente) => campoFiltro === 'todos'
-      ? [cliente.nome, cliente.cpf, cliente.telefone, cliente.email]
+      ? [cliente.nome, cliente.documento, cliente.telefone, cliente.email]
       : [cliente[campoFiltro]]
 
     return clientes.filter((cliente) => valores(cliente)
@@ -99,9 +133,17 @@ function CustomersPage() {
     setClienteEditando(cliente)
     setFormulario({
       nome: cliente.nome,
-      cpf: cliente.cpf,
+      tipo_pessoa: cliente.tipo_pessoa || 'PF',
+      documento: cliente.documento,
       telefone: cliente.telefone || '',
       email: cliente.email || '',
+      cep: cliente.cep || '',
+      logradouro: cliente.logradouro || '',
+      numero: cliente.numero || '',
+      complemento: cliente.complemento || '',
+      bairro: cliente.bairro || '',
+      cidade: cliente.cidade || '',
+      uf: cliente.uf || '',
       desconto_percentual: String(cliente.desconto_percentual ?? 0),
     })
     setModalAberto(true)
@@ -126,10 +168,10 @@ function CustomersPage() {
   async function salvarCliente(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const nome = formulario.nome.trim()
-    const cpf = formulario.cpf.trim()
+    const documento = formulario.documento.trim()
 
-    if (!nome || !cpf) {
-      toast.warning('Informe nome e CPF do cliente.')
+    if (!nome || !documento) {
+      toast.warning(`Informe ${formulario.tipo_pessoa === 'PF' ? 'nome e CPF' : 'razão social e CNPJ'} do cliente.`)
       return
     }
 
@@ -147,9 +189,17 @@ function CustomersPage() {
           method: clienteEditando ? 'PUT' : 'POST',
           body: JSON.stringify({
             nome,
-            cpf,
+            tipo_pessoa: formulario.tipo_pessoa,
+            documento,
             telefone: formulario.telefone.trim() || null,
             email: formulario.email.trim() || null,
+            cep: formulario.cep.trim() || null,
+            logradouro: formulario.logradouro.trim() || null,
+            numero: formulario.numero.trim() || null,
+            complemento: formulario.complemento.trim() || null,
+            bairro: formulario.bairro.trim() || null,
+            cidade: formulario.cidade.trim() || null,
+            uf: formulario.uf.trim() || null,
             desconto_percentual: descontoPercentual,
           }),
         }
@@ -235,7 +285,7 @@ function CustomersPage() {
               <select value={campoFiltro} onChange={(event) => setCampoFiltro(event.target.value as CampoFiltro)} aria-label="Filtrar por campo">
                 <option value="todos">Todos os campos</option>
                 <option value="nome">Nome</option>
-                <option value="cpf">CPF</option>
+                <option value="documento">Documento (CPF/CNPJ)</option>
                 <option value="telefone">Telefone</option>
                 <option value="email">E-mail</option>
               </select>
@@ -261,10 +311,13 @@ function CustomersPage() {
                   <div className="customer-icon"><FiUser /></div>
                   <div>
                     <strong>{cliente.nome}</strong>
-                    <span>{cliente.cpf}{cliente.telefone ? ` • ${cliente.telefone}` : ''}</span>
+                    <span>{cliente.tipo_pessoa === 'PJ' ? 'CNPJ' : 'CPF'} {formatarDocumento(cliente.tipo_pessoa, cliente.documento)}{cliente.telefone ? ` • ${cliente.telefone}` : ''}</span>
                   </div>
                 </div>
-                <div className="customer-contact">{cliente.email || 'Sem e-mail cadastrado'}</div>
+                <div className="customer-contact">
+                  <span>{cliente.email || 'Sem e-mail cadastrado'}</span>
+                  {(cliente.cidade || cliente.uf) && <span>{[cliente.cidade, cliente.uf].filter(Boolean).join(' - ')}</span>}
+                </div>
                 <span className="customer-sales">{Number(cliente.desconto_percentual)}% desconto</span>
                 <div className="customer-actions">
                   <button className="customer-action-button" onClick={() => abrirEdicao(cliente)} title={`Editar ${cliente.nome}`}><FiEdit2 /></button>
@@ -278,7 +331,7 @@ function CustomersPage() {
 
       {modalAberto && (
         <div className="customers-modal-overlay" onClick={() => fecharModal()}>
-          <form className="customers-modal" onSubmit={salvarCliente} onClick={(event) => event.stopPropagation()}>
+          <form className="customers-modal customers-customer-form-modal" onSubmit={salvarCliente} onClick={(event) => event.stopPropagation()}>
             <div className="customers-modal-header">
               <div>
                 <span className="customers-eyebrow">Relacionamento</span>
@@ -287,10 +340,23 @@ function CustomersPage() {
               <button type="button" className="customers-close-button" onClick={() => fecharModal()} disabled={salvando} title="Fechar"><FiX /></button>
             </div>
             <div className="customer-form-grid">
-              <label>Nome completo<input autoFocus value={formulario.nome} onChange={(event) => atualizarCampo('nome', event.target.value)} maxLength={150} required /></label>
-              <label>CPF<input value={formulario.cpf} onChange={(event) => atualizarCampo('cpf', event.target.value)} maxLength={20} required /></label>
+              <label className="customer-form-wide">{formulario.tipo_pessoa === 'PF' ? 'Nome completo' : 'Razão social'}<input autoFocus value={formulario.nome} onChange={(event) => atualizarCampo('nome', event.target.value)} maxLength={150} required /></label>
+              <label>Tipo de pessoa<select value={formulario.tipo_pessoa} onChange={(event) => { atualizarCampo('tipo_pessoa', event.target.value as 'PF' | 'PJ'); atualizarCampo('documento', '') }}><option value="PF">Pessoa física</option><option value="PJ">Pessoa jurídica</option></select></label>
+              <label>{formulario.tipo_pessoa === 'PF' ? 'CPF' : 'CNPJ'}<input value={formulario.documento} onChange={(event) => {
+                const documento = formulario.tipo_pessoa === 'PF'
+                  ? event.target.value.replace(/\D/g, '').slice(0, 11)
+                  : event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 14)
+                atualizarCampo('documento', documento)
+              }} maxLength={14} required /></label>
               <label>Telefone<input value={formulario.telefone} onChange={(event) => atualizarCampo('telefone', event.target.value)} maxLength={30} /></label>
               <label>E-mail<input type="email" value={formulario.email} onChange={(event) => atualizarCampo('email', event.target.value)} maxLength={150} /></label>
+              <label>CEP<input inputMode="numeric" value={formulario.cep} onChange={(event) => atualizarCampo('cep', event.target.value.replace(/\D/g, '').slice(0, 8))} maxLength={8} /></label>
+              <label className="customer-form-wide">Logradouro<input value={formulario.logradouro} onChange={(event) => atualizarCampo('logradouro', event.target.value)} maxLength={150} /></label>
+              <label>Número<input value={formulario.numero} onChange={(event) => atualizarCampo('numero', event.target.value)} maxLength={20} /></label>
+              <label>Complemento<input value={formulario.complemento} onChange={(event) => atualizarCampo('complemento', event.target.value)} maxLength={100} /></label>
+              <label>Bairro<input value={formulario.bairro} onChange={(event) => atualizarCampo('bairro', event.target.value)} maxLength={100} /></label>
+              <label>Cidade<input value={formulario.cidade} onChange={(event) => atualizarCampo('cidade', event.target.value)} maxLength={100} /></label>
+              <label>UF<input value={formulario.uf} onChange={(event) => atualizarCampo('uf', event.target.value.replace(/[^a-z]/gi, '').toUpperCase().slice(0, 2))} maxLength={2} /></label>
               <label className="customer-discount-field">
                 Desconto padrão (%)
                 <input type="number" min="0" max="100" step="0.01" value={formulario.desconto_percentual} onChange={(event) => atualizarCampo('desconto_percentual', event.target.value)} />

@@ -1055,3 +1055,140 @@
     grid-template-columns: 1fr;
   }
 }
+
+.sales-header {
+  margin-bottom: 28px;
+}
+
+.sales-eyebrow {
+  color: #6b7280;
+}
+
+.sales-primary-button {
+  border-color: #111827;
+  background: #111827;
+}
+
+.sales-primary-button:hover:not(:disabled) {
+  border-color: #1f2937;
+  background: #1f2937;
+}
+
+.sales-metric-revenue > strong,
+.sales-client-discount,
+.sales-cart-summary > .sales-cart-discount > strong,
+.sales-detail-financial > div:last-child strong {
+  color: #2563eb;
+}
+
+.sales-history {
+  border-color: #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.sales-search:focus-within,
+.sales-client-select select:focus,
+.sales-discount-input input:focus,
+.sales-product-filters select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.sales-icon-button:hover,
+.sales-close-button:hover:not(:disabled),
+.sales-client-results > button:hover {
+  border-color: #e5e7eb;
+  background: #f9fafb;
+  color: #111827;
+}
+
+.sales-empty-icon,
+.sales-product-symbol {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.sales-spinner {
+  border-top-color: #2563eb;
+}
+
+.sales-selected-client {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.sales-detail-modal-header {
+  align-items: flex-start;
+}
+
+.sales-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sales-pdf-button {
+  min-height: 34px;
+  padding: 7px 10px;
+}
+
+.sales-detail-meta {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sales-detail-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 48px 92px 92px;
+  align-items: center;
+}
+
+.sales-detail-item > :not(:first-child) {
+  text-align: right;
+}
+
+.sales-detail-item-header {
+  padding-top: 9px;
+  padding-bottom: 9px;
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.sales-selected-client button {
+  border-color: #dbe3f2;
+  color: #526178;
+}
+
+.sales-add-button {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.sales-add-button:hover {
+  border-color: #2563eb;
+  background: #2563eb;
+}
+
+.sales-cart-total,
+.sales-cart-summary {
+  background: #f9fafb;
+}
+
+.sales-cart-total strong,
+.sales-cart-summary > .sales-cart-total > strong,
+.sales-detail-total strong {
+  color: #111827;
+}
+
+.sales-cart-summary > .sales-cart-total {
+  border-top-color: #e5e7eb;
+}
+
+.sales-modal,
+.sales-detail-modal {
+  border-color: #e5e7eb;
+  border-radius: 12px;
+}

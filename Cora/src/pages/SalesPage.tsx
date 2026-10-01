@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  FiDownload,
   FiEye,
   FiMinus,
   FiPackage,
@@ -16,7 +17,8 @@ import './SalesPage.css'
 type Cliente = {
   id_cliente: number
   nome: string
-  cpf: string
+  tipo_pessoa: 'PF' | 'PJ'
+  documento: string
   telefone: string | null
   email: string | null
   desconto_percentual: number | string
@@ -77,6 +79,83 @@ function normalizarBusca(valor: string) {
   return valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
 }
 
+async function baixarComprovante(venda: VendaDetalhe) {
+  const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ])
+  const documento = new jsPDF({ unit: 'mm', format: 'a4' })
+  const larguraPagina = documento.internal.pageSize.getWidth()
+  const alturaPagina = documento.internal.pageSize.getHeight()
+
+  documento.setTextColor(17, 24, 39)
+  documento.setFont('helvetica', 'bold')
+  documento.setFontSize(18)
+  documento.text('Cora', 14, 18)
+  documento.setFontSize(12)
+  documento.text(`Comprovante de venda #${venda.id_venda}`, 14, 26)
+  documento.setFont('helvetica', 'normal')
+  documento.setFontSize(9)
+  documento.setTextColor(75, 85, 99)
+
+  let posicaoY = 34
+  const informacoes = [
+    `Data: ${formatarData(venda.data)}`,
+    `Cliente: ${venda.nome_cliente}`,
+    `Responsável: ${venda.nome_usuario || 'Não informado'}`,
+    'Comprovante interno - não é documento fiscal',
+  ]
+  informacoes.forEach((informacao) => {
+    const linhas = documento.splitTextToSize(informacao, larguraPagina - 28)
+    documento.text(linhas, 14, posicaoY)
+    posicaoY += linhas.length * 4.5 + 2
+  })
+
+  autoTable(documento, {
+    startY: posicaoY + 2,
+    head: [['Produto', 'Qtd.', 'Preço unitário', 'Total']],
+    body: venda.itens.map((item) => [
+      item.nome_produto,
+      String(item.quantidade),
+      formatarPreco(item.preco_venda),
+      formatarPreco(item.subtotal),
+    ]),
+    theme: 'grid',
+    styles: { font: 'helvetica', fontSize: 9, cellPadding: 3, textColor: [31, 41, 55] },
+    headStyles: { fillColor: [243, 244, 246], textColor: [17, 24, 39], fontStyle: 'bold' },
+    columnStyles: {
+      1: { cellWidth: 18, halign: 'right' },
+      2: { cellWidth: 34, halign: 'right' },
+      3: { cellWidth: 30, halign: 'right' },
+    },
+  })
+
+  const finalTabelaY = (documento as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY
+  const resumoY = finalTabelaY + 10
+  const resumoEmNovaPagina = resumoY + 34 > alturaPagina - 14
+  if (resumoEmNovaPagina) documento.addPage()
+  const linhaResumo = resumoEmNovaPagina ? 24 : resumoY
+
+  const xRotulo = larguraPagina - 74
+  const xValor = larguraPagina - 14
+  documento.setFont('helvetica', 'normal')
+  documento.setFontSize(10)
+  documento.setTextColor(55, 65, 81)
+  documento.text('Subtotal', xRotulo, linhaResumo)
+  documento.text(formatarPreco(venda.valor_subtotal), xValor, linhaResumo, { align: 'right' })
+  documento.text(`Desconto (${Number(venda.desconto_percentual)}%)`, xRotulo, linhaResumo + 7)
+  documento.text(`- ${formatarPreco(venda.valor_desconto)}`, xValor, linhaResumo + 7, { align: 'right' })
+  documento.setDrawColor(156, 163, 175)
+  documento.line(xRotulo, linhaResumo + 11, xValor, linhaResumo + 11)
+  documento.setFont('helvetica', 'bold')
+  documento.setFontSize(12)
+  documento.setTextColor(17, 24, 39)
+  documento.text('Total da venda', xRotulo, linhaResumo + 18)
+  documento.text(formatarPreco(venda.valor_total), xValor, linhaResumo + 18, { align: 'right' })
+
+  documento.save(`comprovante-venda-${venda.id_venda}.pdf`)
+}
+
 function SalesPage() {
   const { usuario } = useAuth()
   const { toast } = useToast()
@@ -130,11 +209,12 @@ function SalesPage() {
   const clientesFiltrados = useMemo(() => {
     const termo = normalizarBusca(buscaCliente)
     if (!termo) return []
+    const documentoBusca = termo.toUpperCase().replace(/[^A-Z0-9]/g, '')
     const digitos = termo.replace(/\D/g, '')
     return clientes.filter((cliente) => {
       const texto = [cliente.nome, cliente.email].some((campo) => normalizarBusca(campo || '').includes(termo))
-      const numero = digitos.length > 0
-        && [cliente.cpf, cliente.telefone].some((campo) => (campo || '').replace(/\D/g, '').includes(digitos))
+      const numero = (digitos.length > 0 && (cliente.telefone || '').replace(/\D/g, '').includes(digitos))
+        || (documentoBusca.length > 0 && cliente.documento.toUpperCase().includes(documentoBusca))
       return texto || numero
     }).slice(0, 8)
   }, [buscaCliente, clientes])
@@ -221,7 +301,7 @@ function SalesPage() {
 
     try {
       setSalvando(true)
-      await api('/vendas', {
+      const resposta = await api('/vendas', {
         method: 'POST',
         body: JSON.stringify({
           id_cliente: Number(clienteSelecionado),
@@ -238,6 +318,14 @@ function SalesPage() {
       const [vendasData, produtosData] = await Promise.all([api('/vendas'), api('/produtos')])
       setVendas(Array.isArray(vendasData) ? vendasData : [])
       setProdutos(Array.isArray(produtosData) ? produtosData : [])
+      const idVenda = Number(resposta?.venda?.id_venda)
+      if (Number.isInteger(idVenda) && idVenda > 0) {
+        try {
+          setVendaDetalhe(await api(`/vendas/${idVenda}`))
+        } catch {
+          toast.warning('Venda registrada. Não foi possível abrir o comprovante; você pode acessá-lo pelo histórico.')
+        }
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Não foi possível registrar a venda.')
     } finally {
@@ -332,17 +420,17 @@ function SalesPage() {
                   <label htmlFor="sales-client-search">Cliente</label>
                   {clienteSelecionadoData ? (
                     <div className="sales-selected-client">
-                      <div><strong>{clienteSelecionadoData.nome}</strong><span>{clienteSelecionadoData.cpf} · desconto padrão {Number(clienteSelecionadoData.desconto_percentual)}%</span></div>
+                      <div><strong>{clienteSelecionadoData.nome}</strong><span>{clienteSelecionadoData.tipo_pessoa === 'PJ' ? 'CNPJ' : 'CPF'} {clienteSelecionadoData.documento} · desconto padrão {Number(clienteSelecionadoData.desconto_percentual)}%</span></div>
                       <button type="button" onClick={() => { setClienteSelecionado(''); setDescontoPercentual('0') }} title="Trocar cliente"><FiX /></button>
                     </div>
                   ) : (
                     <>
-                      <label className="sales-search sales-client-search"><FiSearch aria-hidden="true" /><input id="sales-client-search" value={buscaCliente} onChange={(event) => setBuscaCliente(event.target.value)} placeholder="Buscar por nome, CPF, telefone ou e-mail" autoComplete="off" /></label>
+                      <label className="sales-search sales-client-search"><FiSearch aria-hidden="true" /><input id="sales-client-search" value={buscaCliente} onChange={(event) => setBuscaCliente(event.target.value)} placeholder="Buscar por nome, CPF/CNPJ, telefone ou e-mail" autoComplete="off" /></label>
                       {buscaCliente.trim() && (
                         <div className="sales-client-results">
                           {clientesFiltrados.length === 0 ? <p>Nenhum cliente encontrado.</p> : clientesFiltrados.map((cliente) => (
                             <button type="button" key={cliente.id_cliente} onClick={() => selecionarCliente(cliente)}>
-                              <span><strong>{cliente.nome}</strong><small>{cliente.cpf}{cliente.telefone ? ` · ${cliente.telefone}` : ''}</small></span>
+                              <span><strong>{cliente.nome}</strong><small>{cliente.tipo_pessoa === 'PJ' ? 'CNPJ' : 'CPF'} {cliente.documento}{cliente.telefone ? ` · ${cliente.telefone}` : ''}</small></span>
                               <span className="sales-client-discount">{Number(cliente.desconto_percentual)}%</span>
                             </button>
                           ))}
@@ -416,11 +504,14 @@ function SalesPage() {
       {(vendaDetalhe || carregandoDetalhe) && (
         <div className="sales-overlay" onClick={() => !carregandoDetalhe && setVendaDetalhe(null)}>
           <section className="sales-detail-modal" onClick={(event) => event.stopPropagation()} aria-labelledby="sale-detail-title" aria-modal="true" role="dialog">
-            <header className="sales-modal-header"><div><span className="sales-eyebrow">Comprovante interno</span><h2 id="sale-detail-title">{vendaDetalhe ? `Venda #${vendaDetalhe.id_venda}` : 'Detalhes da venda'}</h2></div><button type="button" className="sales-close-button" onClick={() => setVendaDetalhe(null)} disabled={carregandoDetalhe} title="Fechar"><FiX /></button></header>
+            <header className="sales-modal-header sales-detail-modal-header"><div><span className="sales-eyebrow">Comprovante interno</span><h2 id="sale-detail-title">{vendaDetalhe ? `Venda #${vendaDetalhe.id_venda}` : 'Detalhes da venda'}</h2></div><div className="sales-detail-actions">{vendaDetalhe && <button type="button" className="sales-secondary-button sales-pdf-button" onClick={() => void baixarComprovante(vendaDetalhe).catch(() => toast.error('Não foi possível gerar o PDF.'))}><FiDownload /> Baixar PDF</button>}<button type="button" className="sales-close-button" onClick={() => setVendaDetalhe(null)} disabled={carregandoDetalhe} title="Fechar"><FiX /></button></div></header>
             {carregandoDetalhe ? <div className="sales-state"><span className="sales-spinner" />Carregando itens...</div> : vendaDetalhe && (
               <>
-                <dl className="sales-detail-meta"><div><dt>Data</dt><dd>{formatarData(vendaDetalhe.data)}</dd></div><div><dt>Cliente</dt><dd>{vendaDetalhe.nome_cliente}</dd></div><div><dt>Responsável</dt><dd>{vendaDetalhe.nome_usuario}</dd></div></dl>
-                <div className="sales-detail-items">{vendaDetalhe.itens.map((item) => <div className="sales-detail-item" key={item.id_item_venda}><div><strong>{item.nome_produto}</strong><span>{item.quantidade} × {formatarPreco(item.preco_venda)}</span></div><strong>{formatarPreco(item.subtotal)}</strong></div>)}</div>
+                <dl className="sales-detail-meta"><div><dt>Venda</dt><dd>#{vendaDetalhe.id_venda}</dd></div><div><dt>Data</dt><dd>{formatarData(vendaDetalhe.data)}</dd></div><div><dt>Cliente</dt><dd>{vendaDetalhe.nome_cliente}</dd></div><div><dt>Responsável</dt><dd>{vendaDetalhe.nome_usuario}</dd></div></dl>
+                <div className="sales-detail-items">
+                  <div className="sales-detail-item sales-detail-item-header"><span>Produto</span><span>Qtd.</span><span>Unitário</span><span>Total</span></div>
+                  {vendaDetalhe.itens.map((item) => <div className="sales-detail-item" key={item.id_item_venda}><strong>{item.nome_produto}</strong><span>{item.quantidade}</span><span>{formatarPreco(item.preco_venda)}</span><strong>{formatarPreco(item.subtotal)}</strong></div>)}
+                </div>
                 <div className="sales-detail-financial"><div><span>Subtotal</span><strong>{formatarPreco(vendaDetalhe.valor_subtotal)}</strong></div><div><span>Desconto ({Number(vendaDetalhe.desconto_percentual)}%)</span><strong>− {formatarPreco(vendaDetalhe.valor_desconto)}</strong></div></div>
                 <div className="sales-detail-total"><span>Total da venda</span><strong>{formatarPreco(vendaDetalhe.valor_total)}</strong></div>
               </>

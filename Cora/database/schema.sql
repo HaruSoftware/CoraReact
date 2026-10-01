@@ -119,10 +119,18 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_produto_codigo_interno_conta
 CREATE TABLE IF NOT EXISTS cliente (
     id_cliente SERIAL PRIMARY KEY,
     id_conta INTEGER NOT NULL,
+    tipo_pessoa VARCHAR(2) NOT NULL DEFAULT 'PF' CHECK (tipo_pessoa IN ('PF', 'PJ')),
     nome VARCHAR(150) NOT NULL,
-    cpf VARCHAR(11) NOT NULL,
+    documento VARCHAR(14) NOT NULL,
     telefone VARCHAR(20),
     email VARCHAR(150),
+    cep VARCHAR(8),
+    logradouro VARCHAR(150),
+    numero VARCHAR(20),
+    complemento VARCHAR(100),
+    bairro VARCHAR(100),
+    cidade VARCHAR(100),
+    uf CHAR(2),
     desconto_percentual NUMERIC(5, 2) NOT NULL DEFAULT 0,
 
     CONSTRAINT fk_cliente_conta
@@ -130,6 +138,9 @@ CREATE TABLE IF NOT EXISTS cliente (
         REFERENCES conta(id_conta)
         ON DELETE CASCADE
 );
+
+CREATE INDEX IF NOT EXISTS ix_cliente_conta_documento
+    ON cliente (id_conta, documento);
 
 CREATE TABLE IF NOT EXISTS usuario (
     id_usuario SERIAL PRIMARY KEY,
