@@ -75,6 +75,19 @@ function formatarData(valor: string) {
   return new Date(valor).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
 }
 
+function formatarDataRelativa(valor: string, agora: number) {
+  const dataMs = new Date(valor).getTime()
+  if (!Number.isFinite(dataMs)) return valor
+
+  const minutos = Math.floor((agora - dataMs) / 60_000)
+  if (minutos < 0 || minutos >= 360) return formatarData(valor)
+  if (minutos === 0) return 'agora'
+  if (minutos < 60) return `há ${minutos} ${minutos === 1 ? 'minuto' : 'minutos'}`
+
+  const horas = Math.floor(minutos / 60)
+  return `há ${horas} ${horas === 1 ? 'hora' : 'horas'}`
+}
+
 function normalizarBusca(valor: string) {
   return valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
 }
@@ -175,6 +188,12 @@ function SalesPage() {
   const [salvando, setSalvando] = useState(false)
   const [vendaDetalhe, setVendaDetalhe] = useState<VendaDetalhe | null>(null)
   const [carregandoDetalhe, setCarregandoDetalhe] = useState(false)
+  const [agora, setAgora] = useState(() => Date.now())
+
+  useEffect(() => {
+    const intervalo = window.setInterval(() => setAgora(Date.now()), 60_000)
+    return () => window.clearInterval(intervalo)
+  }, [])
 
   useEffect(() => {
     let ativo = true
@@ -387,7 +406,7 @@ function SalesPage() {
                 {vendasFiltradas.map((venda) => (
                   <tr key={venda.id_venda}>
                     <td><strong className="sales-code">#{venda.id_venda}</strong></td>
-                    <td>{formatarData(venda.data)}</td>
+                    <td><time dateTime={venda.data} title={formatarData(venda.data)} aria-label={formatarData(venda.data)}>{formatarDataRelativa(venda.data, agora)}</time></td>
                     <td className="sales-customer-cell">{venda.nome_cliente}</td>
                     <td>{venda.quantidade_itens}</td>
                     <td>{venda.nome_usuario || usuario?.nome}</td>
