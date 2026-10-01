@@ -9,7 +9,7 @@ type TipoPessoa = 'PF' | 'PJ'
 type DadosCliente = {
   nome: string
   tipo_pessoa: TipoPessoa
-  documento: string
+  documento: string | null
   telefone: string | null
   email: string | null
   cep: string | null
@@ -79,10 +79,21 @@ function validarDadosCliente(body: Record<string, unknown>): { dados?: DadosClie
   const nome = textoOpcional(body.nome, 150)
   if (typeof nome !== 'string') return { erro: 'Informe um nome ou razão social de até 150 caracteres.' }
 
-  const documento = normalizarDocumento(tipoPessoa, body.documento ?? body.cpf)
-  const documentoValido = tipoPessoa === 'PF' ? validarCpf(documento) : validarCnpj(documento)
-  if (!documentoValido) {
+  const documentoRecebido = textoOpcional(body.documento ?? body.cpf, 18)
+  if (documentoRecebido === false) return { erro: 'O documento excede o tamanho permitido.' }
+  const documentoNormalizado = typeof documentoRecebido === 'string'
+    ? normalizarDocumento(tipoPessoa, documentoRecebido)
+    : null
+  if (documentoRecebido && !documentoNormalizado) {
     return { erro: tipoPessoa === 'PF' ? 'Informe um CPF válido.' : 'Informe um CNPJ válido.' }
+  }
+  if (documentoNormalizado) {
+    const documentoValido = tipoPessoa === 'PF'
+      ? validarCpf(documentoNormalizado)
+      : validarCnpj(documentoNormalizado)
+    if (!documentoValido) {
+      return { erro: tipoPessoa === 'PF' ? 'Informe um CPF válido.' : 'Informe um CNPJ válido.' }
+    }
   }
 
   const telefone = textoOpcional(body.telefone, 20)
@@ -115,7 +126,7 @@ function validarDadosCliente(body: Record<string, unknown>): { dados?: DadosClie
     dados: {
       nome,
       tipo_pessoa: tipoPessoa,
-      documento,
+      documento: documentoNormalizado,
       telefone: telefone || null,
       email: email || null,
       cep,
@@ -183,12 +194,14 @@ router.post('/', autenticar, async (req, res) => {
     }
 
     const dados = validacao.dados
-    const existente = await pool.query(
-      'SELECT 1 FROM cliente WHERE id_conta = $1 AND documento = $2 LIMIT 1',
-      [id_conta, dados.documento]
-    )
-    if (existente.rows.length > 0) {
-      return res.status(409).json({ success: false, message: 'Já existe um cliente com este documento.' })
+    if (dados.documento) {
+      const existente = await pool.query(
+        'SELECT 1 FROM cliente WHERE id_conta = $1 AND documento = $2 LIMIT 1',
+        [id_conta, dados.documento]
+      )
+      if (existente.rows.length > 0) {
+        return res.status(409).json({ success: false, message: 'Já existe um cliente com este documento.' })
+      }
     }
 
     const result = await pool.query(
@@ -251,14 +264,16 @@ router.put('/:id', autenticar, async (req, res) => {
     }
 
     const dados = validacao.dados
-    const existente = await pool.query(
-      `SELECT 1 FROM cliente
-       WHERE id_conta = $1 AND documento = $2 AND id_cliente <> $3
-       LIMIT 1`,
-      [id_conta, dados.documento, id]
-    )
-    if (existente.rows.length > 0) {
-      return res.status(409).json({ success: false, message: 'Já existe um cliente com este documento.' })
+    if (dados.documento) {
+      const existente = await pool.query(
+        `SELECT 1 FROM cliente
+         WHERE id_conta = $1 AND documento = $2 AND id_cliente <> $3
+         LIMIT 1`,
+        [id_conta, dados.documento, id]
+      )
+      if (existente.rows.length > 0) {
+        return res.status(409).json({ success: false, message: 'Já existe um cliente com este documento.' })
+      }
     }
 
     const result = await pool.query(

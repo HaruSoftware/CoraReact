@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
+import { urlDaApi } from '../services/api'
 import './LoginPage.css'
 import { FcGoogle } from 'react-icons/fc'
 import { useNavigate } from 'react-router-dom'
@@ -97,7 +98,7 @@ function LoginPage() {
             type="button"
             className="google-button"
             onClick={() => {
-              window.location.href = 'http://localhost:3000/api/auth/google'
+              window.location.href = urlDaApi('/auth/google')
             }}
           >
             <FcGoogle className="google-icon" />

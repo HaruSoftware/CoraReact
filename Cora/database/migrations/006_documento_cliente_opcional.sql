@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE cliente
+    ALTER COLUMN documento DROP NOT NULL;
+
+COMMIT;

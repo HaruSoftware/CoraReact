@@ -143,12 +143,14 @@ alterar esse comportamento sem revisar o schema e todas as queries relacionadas.
 ### Clientes
 
 O backend esta em `src/server/routes/clientes.ts` e oferece CRUD protegido.
-Campos: `tipo_pessoa` (PF/PJ), `nome` e `documento` (CPF/CNPJ) obrigatorios;
+Campos: `tipo_pessoa` (PF/PJ) e `nome` obrigatorios; `documento` (CPF/CNPJ)
+opcional e validado quando informado;
 `telefone`, `email` e endereco (`cep`, `logradouro`, `numero`, `complemento`,
 `bairro`, `cidade`, `uf`) opcionais. CPF/CNPJ e validado e nao pode se repetir
-dentro da mesma conta. `desconto_percentual` e opcional (padrao zero, faixa 0 a
+quando informado, e nao pode se repetir dentro da mesma conta. `desconto_percentual` e opcional (padrao zero, faixa 0 a
 100). O retorno inclui o desconto cadastrado, aplicado como sugestao em cada
-venda. Schema e migration 005 mantem clientes existentes como PF.
+venda. Migration 005 mantém clientes existentes como PF; migration 006 torna
+o documento anulável.
 
 Para criar a interface de clientes, seguir o padrao de `SettingsPage`:
 usar `api('/clientes')`, estado local para lista/formulario, confirmacao antes
@@ -166,7 +168,7 @@ demonstrativos: nao ha pagamento ou renovacao automatica. Contas existentes
 nao recebem plano na migracao.
 
 Campos centrais: `produto` tem `preco`/`estoque`; `cliente` tem `tipo_pessoa`,
-`nome`, `documento`, endereco, `telefone`, `email` e `desconto_percentual`;
+`nome`, `documento` (opcional), endereco, `telefone`, `email` e `desconto_percentual`;
 `venda` guarda `valor_subtotal`,
 `desconto_percentual`, `valor_desconto` e `valor_total`; `item_venda` guarda
 `quantidade`/`preco_venda`.

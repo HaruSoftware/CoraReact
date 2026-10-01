@@ -9,6 +9,38 @@
 
 ---
 
+## PLANO
+
+- **id_plano** (PK)
+- codigo (UNIQUE)
+- nome
+- descricao
+- preco_mensal
+- demonstrativo
+- ativo
+- data_criacao
+
+---
+
+## ASSINATURA
+
+- **id_assinatura** (PK)
+- **id_conta** (FK)
+- **id_plano** (FK)
+- status (ativa ou cancelada)
+- periodicidade (mensal)
+- valor_mensal (snapshot do valor no momento da ativação)
+- data_inicio
+- data_fim_periodo
+- data_criacao
+
+Planos demonstrativos ativam imediatamente e não geram cobrança. A data de fim
+representa o período mensal; renovação e pagamento automáticos ainda não são
+implementados. Contas anteriores podem permanecer sem assinatura até escolherem
+um plano no próximo acesso.
+
+---
+
 ## PRODUTO
 
 - **id_produto** (PK)
@@ -51,10 +83,24 @@
 
 - **id_cliente** (PK)
 - **id_conta** (FK)
+- tipo_pessoa (PF ou PJ)
 - nome
-- cpf
+- documento (CPF ou CNPJ; opcional e validado quando informado)
 - telefone
 - email
+- cep
+- logradouro
+- numero
+- complemento
+- bairro
+- cidade
+- uf
+- desconto_percentual (padrão de desconto para vendas; 0 a 100)
+
+CPF/CNPJ é opcional, validado conforme o tipo de pessoa quando informado, e
+não pode se repetir dentro da mesma conta. Os campos de endereço também são
+opcionais. Limite de crédito fica pendente da implementação de vendas a prazo
+e contas a receber.
 
 ---
 
@@ -76,7 +122,14 @@
 - **id_cliente** (FK)
 - **id_usuario** (FK)
 - data
+- valor_subtotal
+- desconto_percentual (percentual aplicado na venda; snapshot)
+- valor_desconto
 - valor_total
+
+O desconto do cliente é apenas o padrão sugerido. A venda salva o percentual e
+o valor efetivamente aplicado, que pode ser ajustado no PDV; alterações futuras
+no cadastro do cliente não modificam vendas anteriores.
 
 ---
 
@@ -91,6 +144,18 @@
 ---
 
 # RELACIONAMENTOS
+
+### PLANO 1:N ASSINATURA
+
+Um plano pode ser escolhido por várias assinaturas.
+
+Cada assinatura referencia um único plano.
+
+### CONTA 1:N ASSINATURA
+
+Uma conta pode possuir histórico de assinaturas, com no máximo uma ativa.
+
+Cada assinatura pertence a uma única conta.
 
 ### CONTA 1:N USUARIO
 

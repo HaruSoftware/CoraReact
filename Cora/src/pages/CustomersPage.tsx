@@ -19,7 +19,7 @@ type Cliente = {
   id_conta: number
   nome: string
   tipo_pessoa: 'PF' | 'PJ'
-  documento: string
+  documento: string | null
   telefone: string | null
   email: string | null
   cep: string | null
@@ -66,7 +66,8 @@ const formularioInicial: ClienteForm = {
   desconto_percentual: '0',
 }
 
-function formatarDocumento(tipoPessoa: 'PF' | 'PJ', documento: string) {
+function formatarDocumento(tipoPessoa: 'PF' | 'PJ', documento: string | null) {
+  if (!documento) return 'Sem documento'
   if (tipoPessoa === 'PF' && /^\d{11}$/.test(documento)) {
     return `${documento.slice(0, 3)}.${documento.slice(3, 6)}.${documento.slice(6, 9)}-${documento.slice(9)}`
   }
@@ -134,7 +135,7 @@ function CustomersPage() {
     setFormulario({
       nome: cliente.nome,
       tipo_pessoa: cliente.tipo_pessoa || 'PF',
-      documento: cliente.documento,
+      documento: cliente.documento || '',
       telefone: cliente.telefone || '',
       email: cliente.email || '',
       cep: cliente.cep || '',
@@ -170,8 +171,8 @@ function CustomersPage() {
     const nome = formulario.nome.trim()
     const documento = formulario.documento.trim()
 
-    if (!nome || !documento) {
-      toast.warning(`Informe ${formulario.tipo_pessoa === 'PF' ? 'nome e CPF' : 'razão social e CNPJ'} do cliente.`)
+    if (!nome) {
+      toast.warning(formulario.tipo_pessoa === 'PF' ? 'Informe o nome do cliente.' : 'Informe a razão social do cliente.')
       return
     }
 
@@ -190,7 +191,7 @@ function CustomersPage() {
           body: JSON.stringify({
             nome,
             tipo_pessoa: formulario.tipo_pessoa,
-            documento,
+            documento: documento || null,
             telefone: formulario.telefone.trim() || null,
             email: formulario.email.trim() || null,
             cep: formulario.cep.trim() || null,
@@ -311,7 +312,7 @@ function CustomersPage() {
                   <div className="customer-icon"><FiUser /></div>
                   <div>
                     <strong>{cliente.nome}</strong>
-                    <span>{cliente.tipo_pessoa === 'PJ' ? 'CNPJ' : 'CPF'} {formatarDocumento(cliente.tipo_pessoa, cliente.documento)}{cliente.telefone ? ` • ${cliente.telefone}` : ''}</span>
+                    <span>{cliente.documento ? `${cliente.tipo_pessoa === 'PJ' ? 'CNPJ' : 'CPF'} ${formatarDocumento(cliente.tipo_pessoa, cliente.documento)}` : 'Sem documento'}{cliente.telefone ? ` • ${cliente.telefone}` : ''}</span>
                   </div>
                 </div>
                 <div className="customer-contact">
@@ -342,12 +343,12 @@ function CustomersPage() {
             <div className="customer-form-grid">
               <label className="customer-form-wide">{formulario.tipo_pessoa === 'PF' ? 'Nome completo' : 'Razão social'}<input autoFocus value={formulario.nome} onChange={(event) => atualizarCampo('nome', event.target.value)} maxLength={150} required /></label>
               <label>Tipo de pessoa<select value={formulario.tipo_pessoa} onChange={(event) => { atualizarCampo('tipo_pessoa', event.target.value as 'PF' | 'PJ'); atualizarCampo('documento', '') }}><option value="PF">Pessoa física</option><option value="PJ">Pessoa jurídica</option></select></label>
-              <label>{formulario.tipo_pessoa === 'PF' ? 'CPF' : 'CNPJ'}<input value={formulario.documento} onChange={(event) => {
+              <label>{formulario.tipo_pessoa === 'PF' ? 'CPF (opcional)' : 'CNPJ (opcional)'}<input value={formulario.documento} onChange={(event) => {
                 const documento = formulario.tipo_pessoa === 'PF'
                   ? event.target.value.replace(/\D/g, '').slice(0, 11)
                   : event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 14)
                 atualizarCampo('documento', documento)
-              }} maxLength={14} required /></label>
+              }} maxLength={14} /><small className="customer-document-hint">Será validado se informado.</small></label>
               <label>Telefone<input value={formulario.telefone} onChange={(event) => atualizarCampo('telefone', event.target.value)} maxLength={30} /></label>
               <label>E-mail<input type="email" value={formulario.email} onChange={(event) => atualizarCampo('email', event.target.value)} maxLength={150} /></label>
               <label>CEP<input inputMode="numeric" value={formulario.cep} onChange={(event) => atualizarCampo('cep', event.target.value.replace(/\D/g, '').slice(0, 8))} maxLength={8} /></label>

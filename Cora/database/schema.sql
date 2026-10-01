@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS cliente (
     id_conta INTEGER NOT NULL,
     tipo_pessoa VARCHAR(2) NOT NULL DEFAULT 'PF' CHECK (tipo_pessoa IN ('PF', 'PJ')),
     nome VARCHAR(150) NOT NULL,
-    documento VARCHAR(14) NOT NULL,
+    documento VARCHAR(14),
     telefone VARCHAR(20),
     email VARCHAR(150),
     cep VARCHAR(8),

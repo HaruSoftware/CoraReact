@@ -18,7 +18,7 @@ type Cliente = {
   id_cliente: number
   nome: string
   tipo_pessoa: 'PF' | 'PJ'
-  documento: string
+  documento: string | null
   telefone: string | null
   email: string | null
   desconto_percentual: number | string
@@ -233,7 +233,7 @@ function SalesPage() {
     return clientes.filter((cliente) => {
       const texto = [cliente.nome, cliente.email].some((campo) => normalizarBusca(campo || '').includes(termo))
       const numero = (digitos.length > 0 && (cliente.telefone || '').replace(/\D/g, '').includes(digitos))
-        || (documentoBusca.length > 0 && cliente.documento.toUpperCase().includes(documentoBusca))
+        || (documentoBusca.length > 0 && (cliente.documento || '').toUpperCase().includes(documentoBusca))
       return texto || numero
     }).slice(0, 8)
   }, [buscaCliente, clientes])
@@ -439,7 +439,7 @@ function SalesPage() {
                   <label htmlFor="sales-client-search">Cliente</label>
                   {clienteSelecionadoData ? (
                     <div className="sales-selected-client">
-                      <div><strong>{clienteSelecionadoData.nome}</strong><span>{clienteSelecionadoData.tipo_pessoa === 'PJ' ? 'CNPJ' : 'CPF'} {clienteSelecionadoData.documento} · desconto padrão {Number(clienteSelecionadoData.desconto_percentual)}%</span></div>
+                      <div><strong>{clienteSelecionadoData.nome}</strong><span>{clienteSelecionadoData.documento ? `${clienteSelecionadoData.tipo_pessoa === 'PJ' ? 'CNPJ' : 'CPF'} ${clienteSelecionadoData.documento}` : 'Sem documento'} · desconto padrão {Number(clienteSelecionadoData.desconto_percentual)}%</span></div>
                       <button type="button" onClick={() => { setClienteSelecionado(''); setDescontoPercentual('0') }} title="Trocar cliente"><FiX /></button>
                     </div>
                   ) : (
@@ -449,7 +449,7 @@ function SalesPage() {
                         <div className="sales-client-results">
                           {clientesFiltrados.length === 0 ? <p>Nenhum cliente encontrado.</p> : clientesFiltrados.map((cliente) => (
                             <button type="button" key={cliente.id_cliente} onClick={() => selecionarCliente(cliente)}>
-                              <span><strong>{cliente.nome}</strong><small>{cliente.tipo_pessoa === 'PJ' ? 'CNPJ' : 'CPF'} {cliente.documento}{cliente.telefone ? ` · ${cliente.telefone}` : ''}</small></span>
+                              <span><strong>{cliente.nome}</strong><small>{cliente.documento ? `${cliente.tipo_pessoa === 'PJ' ? 'CNPJ' : 'CPF'} ${cliente.documento}` : 'Sem documento'}{cliente.telefone ? ` · ${cliente.telefone}` : ''}</small></span>
                               <span className="sales-client-discount">{Number(cliente.desconto_percentual)}%</span>
                             </button>
                           ))}

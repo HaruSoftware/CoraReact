@@ -1,4 +1,9 @@
-const API_URL = 'http://localhost:3000/api'
+const API_URL = (import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000/api' : '/api'))
+  .replace(/\/+$/, '')
+
+export function urlDaApi(endpoint: string) {
+  return `${API_URL}${endpoint}`
+}
 
 type ApiOptions = RequestInit & {
   token?: string
@@ -10,7 +15,7 @@ export async function api(
 ) {
   const { token, headers, ...fetchOptions } = options
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(urlDaApi(endpoint), {
     ...fetchOptions,
     credentials: 'include',
     headers: {

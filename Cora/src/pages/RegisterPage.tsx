@@ -6,6 +6,7 @@ import './RegisterPage.css'
 import { useNavigate } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom'
 import PlanPicker from '../components/PlanPicker'
+import { urlDaApi } from '../services/api'
 
 function RegisterPage() {
     const navigate = useNavigate()
@@ -225,7 +226,7 @@ function RegisterPage() {
                         className="google-button"
                         disabled={!idPlano || carregando}
                         onClick={() => {
-                            window.location.href = `http://localhost:3000/api/auth/google?id_plano=${idPlano}`
+                            window.location.href = `${urlDaApi('/auth/google')}?id_plano=${idPlano}`
                         }}
                     >
                         <FcGoogle className="google-icon" />
