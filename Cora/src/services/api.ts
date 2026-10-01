@@ -1,5 +1,24 @@
-const API_URL = (import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000/api' : '/api'))
-  .replace(/\/+$/, '')
+function normalizarUrlDaApi(url: string) {
+  const valor = url.trim().replace(/\/+$/, '')
+
+  if (valor.startsWith('/')) {
+    return valor.endsWith('/api') ? valor : `${valor}/api`
+  }
+
+  const urlComProtocolo = /^https?:\/\//i.test(valor)
+    ? valor
+    : `https://${valor}`
+  const urlAbsoluta = new URL(urlComProtocolo)
+  const caminho = urlAbsoluta.pathname.replace(/\/+$/, '')
+  const caminhoDaApi = caminho.endsWith('/api') ? caminho : `${caminho}/api`
+
+  return `${urlAbsoluta.origin}${caminhoDaApi}`
+}
+
+const API_URL = normalizarUrlDaApi(
+  import.meta.env.VITE_API_URL ||
+    (import.meta.env.DEV ? 'http://localhost:3000/api' : '/api')
+)
 
 export function urlDaApi(endpoint: string) {
   return `${API_URL}${endpoint}`
