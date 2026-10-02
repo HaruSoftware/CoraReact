@@ -34,10 +34,12 @@
 - data_fim_periodo
 - data_criacao
 
-Planos demonstrativos ativam imediatamente e não geram cobrança. A data de fim
-representa o período mensal; renovação e pagamento automáticos ainda não são
-implementados. Contas anteriores podem permanecer sem assinatura até escolherem
-um plano no próximo acesso.
+Planos demonstrativos ativam imediatamente e não geram cobrança. No cadastro
+tradicional, a assinatura é criada com o plano selecionado. No cadastro com
+Google, conta e usuário são criados sem assinatura; após a autenticação, o
+usuário escolhe e ativa um plano. Uma conta sem assinatura não acessa o painel
+até concluir essa escolha. A data de fim representa o período mensal; renovação
+e pagamento automáticos ainda não são implementados.
 
 ---
 
@@ -50,7 +52,7 @@ um plano no próximo acesso.
 - descricao
 - codigo_barras (opcional)
 - codigo_interno (opcional)
-- custo
+- custo (NUMERIC(10,2), padrão 0, não negativo)
 - preco
 - estoque
 - estoque_minimo
@@ -114,7 +116,7 @@ e contas a receber.
 - **id_usuario** (PK)
 - **id_conta** (FK)
 - nome
-- email
+- email (único globalmente após remover espaços externos e ignorar maiúsculas/minúsculas)
 - senha (opcional para usuarios google)
 - google_id (UNIQUE, OPCIONAL)
 
