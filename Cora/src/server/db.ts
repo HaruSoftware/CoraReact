@@ -7,9 +7,6 @@ const { Pool } = pg
 
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  connectionTimeoutMillis: 10_000,
-  query_timeout: 15_000,
-  statement_timeout: 15_000,
 })
 
 export async function testDatabaseConnection() {
