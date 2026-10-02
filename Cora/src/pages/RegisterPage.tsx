@@ -4,7 +4,6 @@ import { useToast } from '../contexts/ToastContextValue'
 import { FcGoogle } from 'react-icons/fc'
 import './RegisterPage.css'
 import { useNavigate } from 'react-router-dom'
-import PlanPicker from '../components/PlanPicker'
 import { urlDaApi } from '../services/api'
 
 function RegisterPage() {
@@ -17,7 +16,6 @@ function RegisterPage() {
     const [email, setEmail] = useState('')
     const [senha, setSenha] = useState('')
     const [confirmarSenha, setConfirmarSenha] = useState('')
-    const [idPlano, setIdPlano] = useState<number | null>(null)
     const [erro, setErro] = useState('')
     const [carregando, setCarregando] = useState(false)
 
@@ -25,13 +23,6 @@ function RegisterPage() {
         event.preventDefault()
 
         setErro('')
-
-        if (!idPlano) {
-            const msg = 'Escolha um plano para continuar.'
-            setErro(msg)
-            toast.warning(msg)
-            return
-        }
 
         if (senha !== confirmarSenha) {
             const msg = 'As senhas não coincidem.'
@@ -48,8 +39,7 @@ function RegisterPage() {
                 emailEmpresa,
                 nome,
                 email,
-                senha,
-                idPlano
+                senha
             )
             toast.success('Conta criada com sucesso!')
         } catch (error: unknown) {
@@ -194,8 +184,6 @@ function RegisterPage() {
                         </div>
                     </div>
 
-                    <PlanPicker selectedPlanId={idPlano} onSelect={setIdPlano} disabled={carregando} />
-
                     {erro && (
                         <div className="register-error">
                             {erro}
@@ -205,7 +193,7 @@ function RegisterPage() {
                     <button
                         className="register-button"
                         type="submit"
-                        disabled={carregando || !idPlano}
+                        disabled={carregando}
                     >
                         {carregando
                             ? 'Criando conta...'

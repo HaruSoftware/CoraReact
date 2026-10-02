@@ -17,8 +17,7 @@ type AuthContextData = {
     emailEmpresa: string,
     nome: string,
     email: string,
-    senha: string,
-    idPlano: number
+    senha: string
   ) => Promise<void>
   logout: () => Promise<void>
   atualizarUsuario: () => Promise<void>

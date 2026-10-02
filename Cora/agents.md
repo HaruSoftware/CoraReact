@@ -122,10 +122,9 @@ Endpoints de infraestrutura:
   com `id_usuario`/`id_conta` e grava o cookie `token` por 8 horas.
 3. No inicio, `AuthContext` chama `/api/auth/me`. `autenticar` aceita cookie
   ou Bearer, valida o token, busca o usuario e injeta `req.usuario`.
-4. O cadastro exige `id_plano` e cria conta, usuario e assinatura mensal ativa
-  na mesma transacao. O primeiro cadastro Google recebe o plano selecionado
-  por cookie temporario; contas antigas sem assinatura vao para
-  `/escolher-plano` no proximo acesso.
+4. O cadastro tradicional cria conta e usuario sem assinatura. Apos a
+  autenticacao, contas sem plano vao para `/escolher-plano`, que ativa a
+  assinatura por `POST /assinaturas`. Novas contas Google seguem a mesma etapa.
 
 ### Multi-tenancy
 
@@ -184,7 +183,7 @@ estão implementados.
 
 - Login, cadastro, logout e sessao por JWT.
 - Cadastro de empresa e usuario administrador.
-- Catalogo demonstrativo de planos mensais e ativacao de assinatura no cadastro.
+- Catalogo demonstrativo de planos mensais e ativacao em etapa separada apos o cadastro.
 - Onboarding de plano para contas sem assinatura e consulta em Configuracoes.
 - Configuracoes da conta, CRUD de usuarios e exclusao da conta.
 - CRUD backend de categorias, produtos e clientes; vendas transacionais com

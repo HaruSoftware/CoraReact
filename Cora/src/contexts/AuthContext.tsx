@@ -52,8 +52,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     emailEmpresa: string,
     nome: string,
     email: string,
-    senha: string,
-    idPlano: number
+    senha: string
   ) {
     await api('/auth/register', {
       method: 'POST',
@@ -63,7 +62,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         nome,
         email,
         senha,
-        id_plano: idPlano,
       }),
     })
 

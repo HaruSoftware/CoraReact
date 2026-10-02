@@ -10,6 +10,7 @@ import {
   FiDollarSign,
   FiGrid,
   FiLogOut,
+  FiMenu,
   FiPackage,
   FiSettings,
   FiShoppingCart,
@@ -25,6 +26,7 @@ function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [modalLogoutAberto, setModalLogoutAberto] = useState(false)
+  const [menuMobileAberto, setMenuMobileAberto] = useState(false)
   const [saindo, setSaindo] = useState(false)
   const [quantidadeProdutos, setQuantidadeProdutos] = useState<number | null>(null)
   const [quantidadeClientes, setQuantidadeClientes] = useState<number | null>(null)
@@ -39,6 +41,11 @@ function Layout() {
     : location.pathname === '/settings'
       ? 'Configurações'
       : 'Dashboard'
+
+  function navegarPara(rota: string) {
+    navigate(rota)
+    setMenuMobileAberto(false)
+  }
 
   useEffect(() => {
     async function carregarQuantidadeProdutos() {
@@ -78,7 +85,16 @@ function Layout() {
     <div className="layout">
 
       {/* SIDEBAR */}
-      <aside className="sidebar">
+      {menuMobileAberto && (
+        <button
+          type="button"
+          className="sidebar-backdrop"
+          aria-label="Fechar menu"
+          onClick={() => setMenuMobileAberto(false)}
+        />
+      )}
+
+      <aside className={`sidebar ${menuMobileAberto ? 'sidebar-open' : ''}`} id="sidebar-navigation">
 
         <div className="sidebar-logo">
           <h1>Cora</h1>
@@ -87,34 +103,34 @@ function Layout() {
 
         <nav className="sidebar-nav">
 
-          <button className={`nav-item ${location.pathname === '/' ? 'active' : ''}`} onClick={() => navigate('/')}>
+          <button className={`nav-item ${location.pathname === '/' ? 'active' : ''}`} onClick={() => navegarPara('/')}>
             <span className="nav-icon" aria-hidden="true"><FiGrid /></span>
             Dashboard
           </button>
 
-          <button className={`nav-item ${location.pathname === '/produtos' ? 'active' : ''}`} onClick={() => navigate('/produtos')}>
+          <button className={`nav-item ${location.pathname === '/produtos' ? 'active' : ''}`} onClick={() => navegarPara('/produtos')}>
             <span className="nav-icon" aria-hidden="true"><FiPackage /></span>
             Produtos
           </button>
 
-          <button className={`nav-item ${location.pathname === '/categorias' ? 'active' : ''}`} onClick={() => navigate('/categorias')}>
+          <button className={`nav-item ${location.pathname === '/categorias' ? 'active' : ''}`} onClick={() => navegarPara('/categorias')}>
             <span className="nav-icon" aria-hidden="true"><FiTag /></span>
             Categorias
           </button>
 
-          <button className={`nav-item ${location.pathname === '/clientes' ? 'active' : ''}`} onClick={() => navigate('/clientes')}>
+          <button className={`nav-item ${location.pathname === '/clientes' ? 'active' : ''}`} onClick={() => navegarPara('/clientes')}>
             <span className="nav-icon" aria-hidden="true"><FiUsers /></span>
             Clientes
           </button>
 
-          <button className={`nav-item ${location.pathname === '/vendas' ? 'active' : ''}`} onClick={() => navigate('/vendas')}>
+          <button className={`nav-item ${location.pathname === '/vendas' ? 'active' : ''}`} onClick={() => navegarPara('/vendas')}>
             <span className="nav-icon" aria-hidden="true"><FiShoppingCart /></span>
             Vendas
           </button>
 
           <button
             className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`}
-            onClick={() => navigate('/settings')}
+            onClick={() => navegarPara('/settings')}
           >
             <span className="nav-icon" aria-hidden="true"><FiUser /></span>
             Usuários
@@ -135,7 +151,7 @@ function Layout() {
 
           <button
             className="settings-button"
-            onClick={() => navigate('/settings')}
+            onClick={() => navegarPara('/settings')}
             title="Configurações"
           >
             <FiSettings />
@@ -151,7 +167,18 @@ function Layout() {
         {/* HEADER */}
         <header className="topbar">
 
-          <div>
+          <button
+            type="button"
+            className="mobile-menu-button"
+            aria-label={menuMobileAberto ? 'Fechar menu' : 'Abrir menu'}
+            aria-expanded={menuMobileAberto}
+            aria-controls="sidebar-navigation"
+            onClick={() => setMenuMobileAberto((aberto) => !aberto)}
+          >
+            <FiMenu />
+          </button>
+
+          <div className="topbar-heading">
             <span className="topbar-label">
               Painel administrativo
             </span>

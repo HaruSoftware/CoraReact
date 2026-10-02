@@ -205,6 +205,10 @@
   padding: 0 38px;
 }
 
+.mobile-menu-button {
+  display: none;
+}
+
 .topbar-label {
   display: block;
   font-size: 11px;
@@ -479,61 +483,112 @@
 
 @media (max-width: 600px) {
   .sidebar {
-    width: 68px;
-    padding: 22px 9px;
+    z-index: 1001;
+    width: min(290px, calc(100vw - 52px));
+    min-height: 100dvh;
+    padding: 22px 16px;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+  }
+
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+    box-shadow: 12px 0 32px rgba(15, 23, 42, 0.24);
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    border: 0;
+    padding: 0;
+    background: rgba(15, 23, 42, 0.48);
   }
 
   .sidebar-logo {
-    padding: 0 0 30px;
-    text-align: center;
+    padding: 0 10px 28px;
+    text-align: left;
   }
 
   .sidebar-logo h1 {
-    font-size: 21px;
+    font-size: 25px;
   }
 
   .sidebar-logo span {
-    display: none;
+    display: block;
   }
 
   .main-area {
-    width: calc(100% - 68px);
-    margin-left: 68px;
+    width: 100%;
+    min-width: 0;
+    margin-left: 0;
   }
 
   .nav-item {
-    justify-content: center;
-    padding: 12px 8px;
+    justify-content: flex-start;
+    padding: 8px 10px;
+    font-size: 14px;
   }
 
-  .nav-item span {
+  .nav-item .nav-icon {
     margin: 0;
   }
 
-  .nav-item {
-    font-size: 0;
-  }
-
-  .nav-item span {
-    font-size: 17px;
-  }
-
   .sidebar-footer {
-    padding: 14px 4px;
-    align-items: center;
+    padding: 18px 10px;
   }
 
   .account-label {
-    display: none;
+    display: block;
   }
 
   .topbar {
     height: 72px;
     padding: 0 16px;
+    gap: 12px;
+  }
+
+  .topbar-heading {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .mobile-menu-button {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    place-items: center;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #374151;
+    font-size: 19px;
+  }
+
+  .mobile-menu-button:focus-visible {
+    outline: 2px solid #45675d;
+    outline-offset: 2px;
   }
 
   .topbar h2 {
-    font-size: 18px;
+    overflow: hidden;
+    font-size: 17px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .topbar-label {
+    font-size: 9px;
+  }
+
+  .user-area {
+    flex: 0 0 auto;
+    gap: 0;
+  }
+
+  .logout-button {
+    padding: 8px 10px;
   }
 
   .dashboard {
