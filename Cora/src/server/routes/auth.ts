@@ -16,6 +16,7 @@ router.post('/logout', (_req, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/',
     })
 
     res.json({
@@ -81,6 +82,7 @@ router.post('/login', async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            path: '/',
             maxAge: 8 * 60 * 60 * 1000,
         })
 
@@ -227,6 +229,7 @@ router.post('/register', async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            path: '/',
             maxAge: 8 * 60 * 60 * 1000,
         })
 

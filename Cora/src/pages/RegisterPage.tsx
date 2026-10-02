@@ -4,13 +4,11 @@ import { useToast } from '../contexts/ToastContextValue'
 import { FcGoogle } from 'react-icons/fc'
 import './RegisterPage.css'
 import { useNavigate } from 'react-router-dom'
-import { useSearchParams } from 'react-router-dom'
 import PlanPicker from '../components/PlanPicker'
 import { urlDaApi } from '../services/api'
 
 function RegisterPage() {
     const navigate = useNavigate()
-    const [searchParams] = useSearchParams()
     const { register } = useAuth()
     const { toast } = useToast()
     const [nomeEmpresa, setNomeEmpresa] = useState('')
@@ -20,11 +18,7 @@ function RegisterPage() {
     const [senha, setSenha] = useState('')
     const [confirmarSenha, setConfirmarSenha] = useState('')
     const [idPlano, setIdPlano] = useState<number | null>(null)
-    const [erro, setErro] = useState(() =>
-        searchParams.get('erro') === 'plano'
-            ? 'Escolha um plano para concluir o cadastro com Google.'
-            : ''
-    )
+    const [erro, setErro] = useState('')
     const [carregando, setCarregando] = useState(false)
 
     async function handleRegister(event: React.FormEvent) {
@@ -224,9 +218,9 @@ function RegisterPage() {
                     <button
                         type="button"
                         className="google-button"
-                        disabled={!idPlano || carregando}
+                        disabled={carregando}
                         onClick={() => {
-                            window.location.href = `${urlDaApi('/auth/google')}?id_plano=${idPlano}`
+                            window.location.href = urlDaApi('/auth/google')
                         }}
                     >
                         <FcGoogle className="google-icon" />
