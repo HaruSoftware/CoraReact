@@ -4,6 +4,12 @@ import bcrypt from 'bcrypt'
 import { autenticar, type AuthRequest } from '../middleware/auth.js'
 
 const router = Router()
+const restricaoEmailUnico = 'uq_usuario_email_normalizado'
+
+function conflitoDeEmail(error: unknown) {
+    return typeof error === 'object' && error !== null &&
+        'constraint' in error && error.constraint === restricaoEmailUnico
+}
 
 router.get('/', autenticar, async (req, res) => {
     try {
@@ -32,14 +38,30 @@ router.get('/', autenticar, async (req, res) => {
 router.post('/', autenticar, async (req, res) => {
     try {
         const { nome, email, senha } = req.body
+        const emailNormalizado = typeof email === 'string' ? email.trim().toLowerCase() : ''
 
         const request = req as AuthRequest
         const id_conta = request.usuario!.id_conta
 
-        if (!nome || !email || !senha) {
+        if (!nome || !emailNormalizado || !senha) {
             return res.status(400).json({
                 success: false,
                 message: 'Nome, email e senha são obrigatórios.',
+            })
+        }
+
+        const usuarioExistente = await pool.query(
+            `SELECT id_usuario
+             FROM usuario
+             WHERE LOWER(BTRIM(email)) = $1
+             LIMIT 1`,
+            [emailNormalizado]
+        )
+
+        if (usuarioExistente.rows.length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: 'Este e-mail já está associado a uma conta.',
             })
         }
 
@@ -54,11 +76,18 @@ router.post('/', autenticar, async (req, res) => {
             )
             VALUES ($1, $2, $3, $4)
             RETURNING id_usuario, id_conta, nome, email`,
-            [id_conta, nome, email, senhaHash]
+            [id_conta, nome, emailNormalizado, senhaHash]
         )
 
         res.status(201).json(result.rows[0])
     } catch (error) {
+        if (conflitoDeEmail(error)) {
+            return res.status(409).json({
+                success: false,
+                message: 'Este e-mail já está associado a uma conta.',
+            })
+        }
+
         console.error('Erro ao criar usuário:', error)
 
         res.status(500).json({
@@ -72,14 +101,31 @@ router.put('/:id', autenticar, async (req, res) => {
     try {
         const { id } = req.params
         const { nome, email, senha } = req.body
+        const emailNormalizado = typeof email === 'string' ? email.trim().toLowerCase() : ''
 
         const request = req as AuthRequest
         const id_conta = request.usuario!.id_conta
 
-        if (!nome || !email) {
+        if (!nome || !emailNormalizado) {
             return res.status(400).json({
                 success: false,
                 message: 'Nome e email são obrigatórios.',
+            })
+        }
+
+        const usuarioExistente = await pool.query(
+            `SELECT id_usuario
+             FROM usuario
+             WHERE LOWER(BTRIM(email)) = $1
+               AND id_usuario <> $2
+             LIMIT 1`,
+            [emailNormalizado, id]
+        )
+
+        if (usuarioExistente.rows.length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: 'Este e-mail já está associado a uma conta.',
             })
         }
 
@@ -96,7 +142,7 @@ router.put('/:id', autenticar, async (req, res) => {
                  WHERE id_usuario = $4
                  AND id_conta = $5
                  RETURNING id_usuario, id_conta, nome, email`,
-                [nome, email, senhaHash, id, id_conta]
+                [nome, emailNormalizado, senhaHash, id, id_conta]
             )
         } else {
             result = await pool.query(
@@ -106,7 +152,7 @@ router.put('/:id', autenticar, async (req, res) => {
                  WHERE id_usuario = $3
                  AND id_conta = $4
                  RETURNING id_usuario, id_conta, nome, email`,
-                [nome, email, id, id_conta]
+                [nome, emailNormalizado, id, id_conta]
             )
         }
 
@@ -119,6 +165,13 @@ router.put('/:id', autenticar, async (req, res) => {
 
         res.json(result.rows[0])
     } catch (error) {
+        if (conflitoDeEmail(error)) {
+            return res.status(409).json({
+                success: false,
+                message: 'Este e-mail já está associado a uma conta.',
+            })
+        }
+
         console.error('Erro ao atualizar usuário:', error)
 
         res.status(500).json({

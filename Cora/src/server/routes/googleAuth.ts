@@ -94,7 +94,8 @@ router.get(
             }
 
             const googleId = profile.id
-            const email = profile.emails?.[0]?.value
+            const emailOriginal = profile.emails?.[0]?.value
+            const email = emailOriginal?.trim().toLowerCase()
             const nome = profile.displayName
 
             if (!googleId || !email) {
@@ -122,7 +123,7 @@ router.get(
                 const usuarioEmail = await client.query(
                     `SELECT id_usuario, id_conta, nome, email, google_id
                      FROM usuario
-                     WHERE email = $1`,
+                     WHERE LOWER(BTRIM(email)) = $1`,
                     [email]
                 )
 

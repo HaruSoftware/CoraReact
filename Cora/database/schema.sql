@@ -156,6 +156,9 @@ CREATE TABLE IF NOT EXISTS usuario (
         ON DELETE CASCADE
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS uq_usuario_email_normalizado
+    ON usuario (LOWER(BTRIM(email)));
+
 CREATE TABLE IF NOT EXISTS venda (
     id_venda SERIAL PRIMARY KEY,
     id_conta INTEGER NOT NULL,

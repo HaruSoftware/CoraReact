@@ -4,6 +4,12 @@ import { pool } from '../db.js'
 import jwt from 'jsonwebtoken'
 
 const router = Router()
+const restricaoEmailUnico = 'uq_usuario_email_normalizado'
+
+function conflitoDeEmail(error: unknown) {
+    return typeof error === 'object' && error !== null &&
+        'constraint' in error && error.constraint === restricaoEmailUnico
+}
 
 router.post('/logout', (_req, res) => {
     res.clearCookie('token', {
@@ -23,8 +29,9 @@ router.post('/logout', (_req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const { email, senha } = req.body
+        const emailNormalizado = typeof email === 'string' ? email.trim().toLowerCase() : ''
 
-        if (!email || !senha) {
+        if (!emailNormalizado || !senha) {
             return res.status(400).json({
                 success: false,
                 message: 'Email e senha são obrigatórios.',
@@ -34,8 +41,8 @@ router.post('/login', async (req, res) => {
         const result = await pool.query(
             `SELECT id_usuario, id_conta, nome, email, senha
              FROM usuario
-             WHERE email = $1`,
-            [email]
+             WHERE LOWER(BTRIM(email)) = $1`,
+            [emailNormalizado]
         )
 
         if (result.rows.length === 0) {
@@ -110,12 +117,13 @@ router.post('/register', async (req, res) => {
             senha,
             id_plano,
         } = req.body
+        const emailNormalizado = typeof email === 'string' ? email.trim().toLowerCase() : ''
 
         if (
             !nomeEmpresa ||
             !emailEmpresa ||
             !nome ||
-            !email ||
+            !emailNormalizado ||
             !senha ||
             !Number.isInteger(Number(id_plano)) ||
             Number(id_plano) <= 0
@@ -144,8 +152,8 @@ router.post('/register', async (req, res) => {
         const usuarioExistente = await client.query(
             `SELECT id_usuario
              FROM usuario
-             WHERE email = $1`,
-            [email]
+             WHERE LOWER(BTRIM(email)) = $1`,
+            [emailNormalizado]
         )
 
         if (usuarioExistente.rows.length > 0) {
@@ -184,7 +192,7 @@ router.post('/register', async (req, res) => {
             [
                 id_conta,
                 nome,
-                email,
+                emailNormalizado,
                 senhaHash,
             ]
         )
@@ -230,6 +238,13 @@ router.post('/register', async (req, res) => {
     } catch (error) {
         // Desfaz a transação se algo der errado
         await client.query('ROLLBACK')
+
+        if (conflitoDeEmail(error)) {
+            return res.status(409).json({
+                success: false,
+                message: 'Este e-mail já está associado a uma conta.',
+            })
+        }
 
         console.error('Erro ao realizar cadastro:', error)
 
