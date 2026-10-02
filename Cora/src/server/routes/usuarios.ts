@@ -198,6 +198,21 @@ router.delete('/:id', autenticar, async (req, res) => {
         const request = req as AuthRequest
         const id_conta = request.usuario!.id_conta
 
+        const criador = await pool.query(
+            `SELECT 1
+             FROM conta
+             WHERE id_conta = $1
+               AND id_usuario_criador = $2`,
+            [id_conta, id]
+        )
+
+        if (criador.rows.length > 0) {
+            return res.status(403).json({
+                success: false,
+                message: 'O criador da conta não pode ser removido da equipe.',
+            })
+        }
+
         const result = await pool.query(
             `DELETE FROM usuario
              WHERE id_usuario = $1

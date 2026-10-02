@@ -586,6 +586,10 @@
   gap: 20px;
 }
 
+.danger-section > .danger-card + .danger-card {
+  margin-top: 12px;
+}
+
 .danger-card strong {
   display: block;
   margin-bottom: 4px;

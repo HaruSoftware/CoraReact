@@ -64,7 +64,7 @@ graph TD
 2. **Módulo de Configurações e Gestão da Conta**
    - Edição de dados cadastrais da empresa (Nome fantasia, e-mail de contato).
    - Gestão de colaboradores vinculados à conta (criação, edição e exclusão de usuários com validação de permissões).
-   - Zona de perigo para exclusão permanente da conta com confirmação explícita.
+   - Zona de perigo acessível somente ao criador da conta, com confirmação explícita `EXCLUIR` para excluir a conta ou limpar vendas, clientes, produtos e categorias.
 
 3. **Módulo de Produtos e Categorias**
    - Cadastro, listagem, atualização e exclusão de produtos (nome, descrição, códigos de barras e interno, preço unitário, unidade de medida, estoque, estoque mínimo e status ativo).

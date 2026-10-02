@@ -184,6 +184,13 @@ router.post('/register', async (req, res) => {
 
         const usuario = usuarioResult.rows[0]
 
+        await client.query(
+            `UPDATE conta
+             SET id_usuario_criador = $1
+             WHERE id_conta = $2`,
+            [usuario.id_usuario, id_conta]
+        )
+
         // Confirma a transação
         await client.query('COMMIT')
 

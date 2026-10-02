@@ -44,6 +44,27 @@ type Assinatura = {
   demonstrativo: boolean
 }
 
+type AreaDados = 'clientes' | 'vendas' | 'produtos' | 'categorias'
+
+const areasDeDados: Record<AreaDados, { titulo: string; descricao: string }> = {
+  clientes: {
+    titulo: 'Clientes',
+    descricao: 'Remove todos os clientes cadastrados. Clientes vinculados a vendas exigem que as vendas sejam limpas primeiro.',
+  },
+  vendas: {
+    titulo: 'Vendas',
+    descricao: 'Remove todas as vendas e seus itens associados, preservando clientes e produtos.',
+  },
+  produtos: {
+    titulo: 'Produtos',
+    descricao: 'Remove todos os produtos cadastrados. Produtos presentes em vendas exigem que as vendas sejam limpas primeiro.',
+  },
+  categorias: {
+    titulo: 'Categorias',
+    descricao: 'Remove todas as categorias. Para evitar apagar produtos associados sem aviso, limpe os produtos primeiro.',
+  },
+}
+
 function mensagemDoErro(error: unknown, mensagemPadrao: string) {
   return error instanceof Error ? error.message : mensagemPadrao
 }
@@ -59,6 +80,7 @@ function SettingsPage() {
   const [email, setEmail] = useState('')
   const [nomeOriginal, setNomeOriginal] = useState('')
   const [emailOriginal, setEmailOriginal] = useState('')
+  const [idUsuarioCriador, setIdUsuarioCriador] = useState<number | null>(null)
   const [editando, setEditando] = useState(false)
   const [salvando, setSalvando] = useState(false)
 
@@ -92,6 +114,9 @@ function SettingsPage() {
   const [modalExcluirContaAberto, setModalExcluirContaAberto] = useState(false)
   const [confirmacaoExcluirConta, setConfirmacaoExcluirConta] = useState('')
   const [excluindoConta, setExcluindoConta] = useState(false)
+  const [areaSelecionada, setAreaSelecionada] = useState<AreaDados | null>(null)
+  const [confirmacaoLimpeza, setConfirmacaoLimpeza] = useState('')
+  const [limpandoArea, setLimpandoArea] = useState(false)
 
   useEffect(() => {
     let cancelado = false
@@ -109,6 +134,7 @@ function SettingsPage() {
         setEmail(contaData.conta.email)
         setNomeOriginal(contaData.conta.nome)
         setEmailOriginal(contaData.conta.email)
+        setIdUsuarioCriador(contaData.conta.id_usuario_criador)
         setUsuarios(Array.isArray(usuariosData) ? usuariosData : [])
         setUnidades(Array.isArray(unidadesData) ? unidadesData : [])
         setAssinatura(assinaturaData.assinatura)
@@ -348,6 +374,7 @@ function SettingsPage() {
 
       await api('/contas/me', {
         method: 'DELETE',
+        body: JSON.stringify({ confirmacao: confirmacaoExcluirConta }),
       })
 
       toast.info('Conta excluída com sucesso.')
@@ -359,6 +386,30 @@ function SettingsPage() {
       toast.error(mensagemDoErro(error, 'Erro ao excluir conta.'))
     } finally {
       setExcluindoConta(false)
+    }
+  }
+
+  async function handleLimparArea() {
+    if (!areaSelecionada) return
+
+    if (confirmacaoLimpeza.toUpperCase() !== 'EXCLUIR') {
+      toast.warning('Digite EXCLUIR exatamente para confirmar.')
+      return
+    }
+
+    try {
+      setLimpandoArea(true)
+      const resultado = await api(`/contas/me/dados/${areaSelecionada}`, {
+        method: 'DELETE',
+        body: JSON.stringify({ confirmacao: confirmacaoLimpeza }),
+      })
+      setAreaSelecionada(null)
+      setConfirmacaoLimpeza('')
+      toast.success(`${resultado.removidos} registro(s) de ${areasDeDados[areaSelecionada].titulo.toLowerCase()} removido(s).`)
+    } catch (error: unknown) {
+      toast.error(mensagemDoErro(error, 'Não foi possível limpar os dados desta área.'))
+    } finally {
+      setLimpandoArea(false)
     }
   }
 
@@ -667,6 +718,7 @@ function SettingsPage() {
         </section>
 
         {/* SEÇÃO: ZONA DE PERIGO */}
+        {idUsuarioCriador !== null && usuarioLogado?.id_usuario === idUsuarioCriador && (
         <section className="settings-section danger-section">
           <div className="section-heading">
             <div className="section-icon danger-icon">
@@ -694,7 +746,26 @@ function SettingsPage() {
               Excluir conta
             </button>
           </div>
+
+          {(Object.entries(areasDeDados) as [AreaDados, (typeof areasDeDados)[AreaDados]][]).map(([area, dados]) => (
+            <div className="danger-card" key={area}>
+              <div>
+                <strong>Limpar {dados.titulo.toLowerCase()}</strong>
+                <p>{dados.descricao}</p>
+              </div>
+              <button
+                className="danger-button"
+                onClick={() => {
+                  setConfirmacaoLimpeza('')
+                  setAreaSelecionada(area)
+                }}
+              >
+                Limpar {dados.titulo.toLowerCase()}
+              </button>
+            </div>
+          ))}
         </section>
+        )}
       </div>
 
       {/* MODAL: NOVO USUÁRIO */}
@@ -955,6 +1026,68 @@ function SettingsPage() {
                 }
               >
                 {excluindoConta ? 'Excluindo...' : 'Excluir conta'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {areaSelecionada && (
+        <div className="modal-overlay" onClick={() => !limpandoArea && setAreaSelecionada(null)}>
+          <div className="modal-container" onClick={(event) => event.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title-wrap">
+                <div className="modal-icon danger-icon">
+                  <FiAlertTriangle />
+                </div>
+                <div>
+                  <h3>Limpar {areasDeDados[areaSelecionada].titulo.toLowerCase()}</h3>
+                  <p>Esta ação é irreversível.</p>
+                </div>
+              </div>
+              <button
+                className="modal-close-button"
+                onClick={() => setAreaSelecionada(null)}
+                disabled={limpandoArea}
+              >
+                <FiX />
+              </button>
+            </div>
+
+            <div className="modal-body-text">
+              <p>{areasDeDados[areaSelecionada].descricao}</p>
+              <p>
+                Todos os registros desta área serão <strong>permanentemente removidos</strong>.
+              </p>
+              <p className="danger-instruction">
+                Para confirmar, digite <strong>EXCLUIR</strong> no campo abaixo:
+              </p>
+              <input
+                type="text"
+                className="settings-input danger-confirm-input"
+                placeholder="Digite EXCLUIR"
+                value={confirmacaoLimpeza}
+                onChange={(event) => setConfirmacaoLimpeza(event.target.value)}
+                autoFocus
+              />
+            </div>
+
+            <div className="user-form-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setAreaSelecionada(null)}
+                disabled={limpandoArea}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="danger-button filled"
+                onClick={handleLimparArea}
+                disabled={confirmacaoLimpeza.toUpperCase() !== 'EXCLUIR' || limpandoArea}
+              >
+                {limpandoArea ? 'Limpando...' : 'Limpar dados'}
               </button>
             </div>
           </div>

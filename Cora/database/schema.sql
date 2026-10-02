@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS conta (
     id_conta SERIAL PRIMARY KEY,
     nome VARCHAR(150) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
+    id_usuario_criador INTEGER,
     data_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -168,6 +169,27 @@ CREATE TABLE IF NOT EXISTS usuario (
         REFERENCES conta(id_conta)
         ON DELETE CASCADE
 );
+
+ALTER TABLE conta
+    ADD COLUMN IF NOT EXISTS id_usuario_criador INTEGER;
+
+UPDATE conta
+SET id_usuario_criador = (
+    SELECT MIN(usuario.id_usuario)
+    FROM usuario
+    WHERE usuario.id_conta = conta.id_conta
+)
+WHERE id_usuario_criador IS NULL;
+
+ALTER TABLE conta
+    DROP CONSTRAINT IF EXISTS fk_conta_usuario_criador;
+
+ALTER TABLE conta
+    ADD CONSTRAINT fk_conta_usuario_criador
+    FOREIGN KEY (id_usuario_criador)
+    REFERENCES usuario(id_usuario)
+    ON DELETE NO ACTION
+    DEFERRABLE INITIALLY DEFERRED;
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_usuario_email_normalizado
     ON usuario (LOWER(BTRIM(email)));
