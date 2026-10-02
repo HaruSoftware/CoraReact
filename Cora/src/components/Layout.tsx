@@ -4,15 +4,20 @@ import { useToast } from '../contexts/ToastContextValue'
 import { api } from '../services/api'
 import './Layout.css'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { FiSettings, FiLogOut, FiX } from 'react-icons/fi'
 import {
-  FaBoxOpen,
-  FaChartPie,
-  FaShoppingCart,
-  FaTags,
-  FaUserCog,
-  FaUsers,
-} from 'react-icons/fa'
+  FiBarChart2,
+  FiClock,
+  FiDollarSign,
+  FiGrid,
+  FiLogOut,
+  FiPackage,
+  FiSettings,
+  FiShoppingCart,
+  FiTag,
+  FiUser,
+  FiUsers,
+  FiX,
+} from 'react-icons/fi'
 
 function Layout() {
   const { usuario, logout } = useAuth()
@@ -83,27 +88,27 @@ function Layout() {
         <nav className="sidebar-nav">
 
           <button className={`nav-item ${location.pathname === '/' ? 'active' : ''}`} onClick={() => navigate('/')}>
-            <span className="nav-icon nav-icon-dashboard" aria-hidden="true"><FaChartPie /></span>
+            <span className="nav-icon" aria-hidden="true"><FiGrid /></span>
             Dashboard
           </button>
 
           <button className={`nav-item ${location.pathname === '/produtos' ? 'active' : ''}`} onClick={() => navigate('/produtos')}>
-            <span className="nav-icon nav-icon-products" aria-hidden="true"><FaBoxOpen /></span>
+            <span className="nav-icon" aria-hidden="true"><FiPackage /></span>
             Produtos
           </button>
 
           <button className={`nav-item ${location.pathname === '/categorias' ? 'active' : ''}`} onClick={() => navigate('/categorias')}>
-            <span className="nav-icon nav-icon-categories" aria-hidden="true"><FaTags /></span>
+            <span className="nav-icon" aria-hidden="true"><FiTag /></span>
             Categorias
           </button>
 
           <button className={`nav-item ${location.pathname === '/clientes' ? 'active' : ''}`} onClick={() => navigate('/clientes')}>
-            <span className="nav-icon nav-icon-customers" aria-hidden="true"><FaUsers /></span>
+            <span className="nav-icon" aria-hidden="true"><FiUsers /></span>
             Clientes
           </button>
 
           <button className={`nav-item ${location.pathname === '/vendas' ? 'active' : ''}`} onClick={() => navigate('/vendas')}>
-            <span className="nav-icon nav-icon-sales" aria-hidden="true"><FaShoppingCart /></span>
+            <span className="nav-icon" aria-hidden="true"><FiShoppingCart /></span>
             Vendas
           </button>
 
@@ -111,7 +116,7 @@ function Layout() {
             className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`}
             onClick={() => navigate('/settings')}
           >
-            <span className="nav-icon nav-icon-users" aria-hidden="true"><FaUserCog /></span>
+            <span className="nav-icon" aria-hidden="true"><FiUser /></span>
             Usuários
           </button>
 
@@ -192,7 +197,7 @@ function Layout() {
               </span>
 
               <h1>
-                Olá, {usuario?.nome}! 👋
+                Olá, {usuario?.nome}!
               </h1>
 
               <p>
@@ -209,9 +214,7 @@ function Layout() {
 
             <article className="stat-card">
 
-              <div className="stat-icon">
-                📦
-              </div>
+              <div className="stat-icon" aria-hidden="true"><FiPackage /></div>
 
               <div>
                 <span>
@@ -228,9 +231,7 @@ function Layout() {
 
             <article className="stat-card">
 
-              <div className="stat-icon">
-                👥
-              </div>
+              <div className="stat-icon" aria-hidden="true"><FiUsers /></div>
 
               <div>
                 <span>
@@ -247,9 +248,7 @@ function Layout() {
 
             <article className="stat-card">
 
-              <div className="stat-icon">
-                🛒
-              </div>
+              <div className="stat-icon" aria-hidden="true"><FiShoppingCart /></div>
 
               <div>
                 <span>
@@ -266,9 +265,7 @@ function Layout() {
 
             <article className="stat-card">
 
-              <div className="stat-icon">
-                💰
-              </div>
+              <div className="stat-icon" aria-hidden="true"><FiDollarSign /></div>
 
               <div>
                 <span>
@@ -310,9 +307,7 @@ function Layout() {
 
               <div className="empty-state">
 
-                <div className="empty-icon">
-                  📊
-                </div>
+                <div className="empty-icon" aria-hidden="true"><FiBarChart2 /></div>
 
                 <strong>
                   Nenhuma venda registrada
@@ -346,9 +341,7 @@ function Layout() {
 
               <div className="empty-state">
 
-                <div className="empty-icon">
-                  ◷
-                </div>
+                <div className="empty-icon" aria-hidden="true"><FiClock /></div>
 
                 <strong>
                   Nenhuma atividade
