@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { FcGoogle } from 'react-icons/fc'
 import {
   FiArrowLeft,
   FiSettings,
@@ -11,8 +12,8 @@ import {
   FiX,
   FiBox,
 } from 'react-icons/fi'
-import { useNavigate } from 'react-router-dom'
-import { api } from '../services/api'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { api, urlDaApi } from '../services/api'
 import { useAuth } from '../contexts/AuthContextValue'
 import { useToast } from '../contexts/ToastContextValue'
 import './SettingsPage.css'
@@ -22,6 +23,7 @@ type Usuario = {
   id_conta: number
   nome: string
   email: string
+  conta_google: boolean
 }
 
 type UnidadeMedida = {
@@ -46,6 +48,7 @@ function mensagemDoErro(error: unknown, mensagemPadrao: string) {
 
 function SettingsPage() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { usuario: usuarioLogado, logout } = useAuth()
   const { toast } = useToast()
 
@@ -73,15 +76,10 @@ function SettingsPage() {
   const [modalExcluirUsuarioAberto, setModalExcluirUsuarioAberto] = useState(false)
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<Usuario | null>(null)
 
-  // Formulário Novo Usuário
-  const [novoNome, setNovoNome] = useState('')
-  const [novoEmail, setNovoEmail] = useState('')
-  const [novaSenha, setNovaSenha] = useState('')
   const [salvandoUsuario, setSalvandoUsuario] = useState(false)
 
   // Formulário Editar Usuário
   const [editNome, setEditNome] = useState('')
-  const [editEmail, setEditEmail] = useState('')
   const [editSenha, setEditSenha] = useState('')
 
   // Modal Excluir Conta
@@ -126,6 +124,27 @@ function SettingsPage() {
       cancelado = true
     }
   }, [toast])
+
+  useEffect(() => {
+    const statusGoogle = searchParams.get('google_user')
+    if (!statusGoogle) return
+
+    if (statusGoogle === 'added') {
+      toast.success('Conta Google adicionada à sua equipe.')
+    } else if (statusGoogle === 'linked') {
+      toast.success('Conta Google vinculada ao usuário existente.')
+    } else if (statusGoogle === 'exists') {
+      toast.info('Esta conta Google já pertence à sua equipe.')
+    } else if (statusGoogle === 'conflict') {
+      toast.error('Este e-mail ou conta Google já está associado a outra conta.')
+    } else {
+      toast.error('Não foi possível adicionar a conta Google.')
+    }
+
+    const parametrosAtualizados = new URLSearchParams(searchParams)
+    parametrosAtualizados.delete('google_user')
+    setSearchParams(parametrosAtualizados, { replace: true })
+  }, [searchParams, setSearchParams, toast])
 
   async function criarUnidade() {
     if (!novoCodigoUnidade.trim() || !novoNomeUnidade.trim()) {
@@ -193,46 +212,14 @@ function SettingsPage() {
     }
   }
 
-  // Criar Usuário
-  async function handleCriarUsuario(e: React.FormEvent) {
-    e.preventDefault()
-
-    if (!novoNome.trim() || !novoEmail.trim() || !novaSenha) {
-      toast.warning('Preencha todos os campos para criar o usuário.')
-      return
-    }
-
-    try {
-      setSalvandoUsuario(true)
-
-      const novoUsuario = await api('/usuarios', {
-        method: 'POST',
-        body: JSON.stringify({
-          nome: novoNome.trim(),
-          email: novoEmail.trim(),
-          senha: novaSenha,
-        }),
-      })
-
-      setUsuarios((prev) => [...prev, novoUsuario])
-      setModalNovoUsuarioAberto(false)
-      setNovoNome('')
-      setNovoEmail('')
-      setNovaSenha('')
-      toast.success('Novo usuário adicionado com sucesso!')
-    } catch (error: unknown) {
-      console.error('Erro ao criar usuário:', error)
-      toast.error(mensagemDoErro(error, 'Erro ao criar usuário.'))
-    } finally {
-      setSalvandoUsuario(false)
-    }
+  function adicionarUsuarioComGoogle() {
+    window.location.href = urlDaApi('/auth/google/link')
   }
 
   // Abrir Modal de Edição de Usuário
   function abrirModalEditar(u: Usuario) {
     setUsuarioSelecionado(u)
     setEditNome(u.nome)
-    setEditEmail(u.email)
     setEditSenha('')
     setModalEditarUsuarioAberto(true)
   }
@@ -242,17 +229,16 @@ function SettingsPage() {
     e.preventDefault()
     if (!usuarioSelecionado) return
 
-    if (!editNome.trim() || !editEmail.trim()) {
-      toast.warning('Nome e e-mail são obrigatórios.')
+    if (!editNome.trim()) {
+      toast.warning('Nome é obrigatório.')
       return
     }
 
     try {
       setSalvandoUsuario(true)
 
-      const payload: { nome: string; email: string; senha?: string } = {
+      const payload: { nome: string; senha?: string } = {
         nome: editNome.trim(),
-        email: editEmail.trim(),
       }
 
       if (editSenha.trim()) {
@@ -546,6 +532,9 @@ function SettingsPage() {
                         <div className="user-info">
                           <div className="user-name-wrapper">
                             <strong>{u.nome}</strong>
+                            {u.conta_google && (
+                              <span className="user-badge-google"><FcGoogle aria-hidden="true" /> Google</span>
+                            )}
                             {ehUsuarioLogado && (
                               <span className="user-badge-current">Você</span>
                             )}
@@ -668,12 +657,12 @@ function SettingsPage() {
           <div className="modal-container" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div className="modal-title-wrap">
-                <div className="modal-icon">
-                  <FiUser />
+                <div className="modal-icon google-user-modal-icon">
+                  <FcGoogle />
                 </div>
                 <div>
-                  <h3>Adicionar Usuário</h3>
-                  <p>Cadastre um novo usuário com acesso à sua conta.</p>
+                  <h3>Adicionar conta Google</h3>
+                  <p>Conecte uma conta Google à sua equipe.</p>
                 </div>
               </div>
               <button
@@ -684,42 +673,8 @@ function SettingsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleCriarUsuario} className="user-form">
-              <div className="user-form-group">
-                <label>Nome completo</label>
-                <input
-                  type="text"
-                  placeholder="Nome do colaborador"
-                  value={novoNome}
-                  onChange={(e) => setNovoNome(e.target.value)}
-                  required
-                  autoFocus
-                />
-              </div>
-
-              <div className="user-form-group">
-                <label>E-mail</label>
-                <input
-                  type="email"
-                  placeholder="colaborador@empresa.com"
-                  value={novoEmail}
-                  onChange={(e) => setNovoEmail(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="user-form-group">
-                <label>Senha provisória</label>
-                <input
-                  type="password"
-                  placeholder="Mínimo 4 caracteres"
-                  value={novaSenha}
-                  onChange={(e) => setNovaSenha(e.target.value)}
-                  required
-                  minLength={4}
-                />
-              </div>
-
+            <div className="google-user-invitation">
+              <p>A pessoa fará login com a própria conta Google. Não é necessário criar ou compartilhar uma senha.</p>
               <div className="user-form-actions">
                 <button
                   type="button"
@@ -730,14 +685,14 @@ function SettingsPage() {
                   Cancelar
                 </button>
                 <button
-                  type="submit"
+                  type="button"
                   className="primary-button"
-                  disabled={salvandoUsuario}
+                  onClick={adicionarUsuarioComGoogle}
                 >
-                  {salvandoUsuario ? 'Salvando...' : 'Criar usuário'}
+                  <FcGoogle aria-hidden="true" /> Continuar com Google
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
@@ -777,13 +732,9 @@ function SettingsPage() {
               </div>
 
               <div className="user-form-group">
-                <label>E-mail</label>
-                <input
-                  type="email"
-                  value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
-                  required
-                />
+                <label htmlFor="edit-user-email">E-mail cadastrado</label>
+                <input id="edit-user-email" type="email" value={usuarioSelecionado.email} readOnly />
+                <small className="user-form-hint">Para usar outro e-mail, exclua este usuário e cadastre-o novamente.</small>
               </div>
 
               <div className="user-form-group">

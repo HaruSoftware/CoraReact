@@ -483,6 +483,25 @@
   letter-spacing: 0.4px;
 }
 
+.user-badge-google {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #4b5563 !important;
+  font-size: 11px !important;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.user-badge-google svg {
+  width: 13px;
+  height: 13px;
+}
+
 .user-info span {
   display: block;
   font-size: 13px;
@@ -756,6 +775,48 @@
 
 .user-form-group input::placeholder {
   color: #9ca3af;
+}
+
+.user-form-group input[readonly] {
+  background: #f5f7f6;
+  color: #687771;
+  cursor: not-allowed;
+}
+
+.user-form-hint {
+  color: #718087;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.google-user-modal-icon {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  color: #4285f4;
+}
+
+.google-user-modal-icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+.google-user-invitation > p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.google-user-invitation .primary-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.google-user-invitation .primary-button svg {
+  width: 17px;
+  height: 17px;
 }
 
 .user-form-actions {

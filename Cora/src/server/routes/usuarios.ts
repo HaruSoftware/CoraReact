@@ -17,7 +17,8 @@ router.get('/', autenticar, async (req, res) => {
         const id_conta = request.usuario!.id_conta
 
         const result = await pool.query(
-            `SELECT id_usuario, id_conta, nome, email
+                `SELECT id_usuario, id_conta, nome, email,
+                    (google_id IS NOT NULL) AS conta_google
              FROM usuario
              WHERE id_conta = $1
              ORDER BY id_usuario`,
@@ -101,31 +102,39 @@ router.put('/:id', autenticar, async (req, res) => {
     try {
         const { id } = req.params
         const { nome, email, senha } = req.body
-        const emailNormalizado = typeof email === 'string' ? email.trim().toLowerCase() : ''
 
         const request = req as AuthRequest
         const id_conta = request.usuario!.id_conta
 
-        if (!nome || !emailNormalizado) {
+        if (!nome) {
             return res.status(400).json({
                 success: false,
-                message: 'Nome e email são obrigatórios.',
+                message: 'Nome é obrigatório.',
             })
         }
 
-        const usuarioExistente = await pool.query(
-            `SELECT id_usuario
+        const usuarioAtual = await pool.query(
+            `SELECT email
              FROM usuario
-             WHERE LOWER(BTRIM(email)) = $1
-               AND id_usuario <> $2
-             LIMIT 1`,
-            [emailNormalizado, id]
+             WHERE id_usuario = $1
+               AND id_conta = $2`,
+            [id, id_conta]
         )
 
-        if (usuarioExistente.rows.length > 0) {
-            return res.status(409).json({
+        if (usuarioAtual.rows.length === 0) {
+            return res.status(404).json({
                 success: false,
-                message: 'Este e-mail já está associado a uma conta.',
+                message: 'Usuário não encontrado.',
+            })
+        }
+
+        if (
+            email !== undefined &&
+            (typeof email !== 'string' || email.trim().toLowerCase() !== usuarioAtual.rows[0].email.trim().toLowerCase())
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: 'O e-mail não pode ser alterado. Exclua o usuário e cadastre-o novamente para usar outro endereço.',
             })
         }
 
@@ -137,22 +146,20 @@ router.put('/:id', autenticar, async (req, res) => {
             result = await pool.query(
                 `UPDATE usuario
                  SET nome = $1,
-                     email = $2,
-                     senha = $3
-                 WHERE id_usuario = $4
-                 AND id_conta = $5
+                     senha = $2
+                 WHERE id_usuario = $3
+                 AND id_conta = $4
                  RETURNING id_usuario, id_conta, nome, email`,
-                [nome, emailNormalizado, senhaHash, id, id_conta]
+                [nome, senhaHash, id, id_conta]
             )
         } else {
             result = await pool.query(
                 `UPDATE usuario
-                 SET nome = $1,
-                     email = $2
-                 WHERE id_usuario = $3
-                 AND id_conta = $4
+                 SET nome = $1
+                 WHERE id_usuario = $2
+                 AND id_conta = $3
                  RETURNING id_usuario, id_conta, nome, email`,
-                [nome, emailNormalizado, id, id_conta]
+                [nome, id, id_conta]
             )
         }
 
