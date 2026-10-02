@@ -251,6 +251,14 @@ function SalesPage() {
   }, [buscaProduto, categoriaProdutoFiltro, categorias, produtos])
 
   const clienteSelecionadoData = clientes.find((cliente) => String(cliente.id_cliente) === clienteSelecionado)
+  const motivoBloqueioNovaVenda = carregando
+    ? 'Carregando clientes e produtos...'
+    : clientes.length === 0
+      ? 'Cadastre um cliente antes de iniciar uma venda.'
+      : produtos.length === 0
+        ? 'Cadastre um produto antes de iniciar uma venda.'
+        : ''
+  const novaVendaBloqueada = Boolean(motivoBloqueioNovaVenda)
   const subtotalCarrinhoCentavos = carrinho.reduce(
     (total, item) => total + Math.round(Number(item.produto.preco) * 100) * item.quantidade,
     0
@@ -372,9 +380,20 @@ function SalesPage() {
           <h1>Vendas</h1>
           <p>Registre vendas, acompanhe o histórico e confira os itens de cada pedido.</p>
         </div>
-        <button className="sales-primary-button" onClick={abrirNovaVenda} disabled={clientes.length === 0 || produtos.length === 0}>
-          <FiPlus /> Nova venda
-        </button>
+        <span
+          className={`sales-new-sale-action${novaVendaBloqueada ? ' is-disabled' : ''}`}
+          tabIndex={novaVendaBloqueada ? 0 : undefined}
+          aria-describedby={novaVendaBloqueada ? 'sales-new-sale-tooltip' : undefined}
+        >
+          <button className="sales-primary-button" onClick={abrirNovaVenda} disabled={novaVendaBloqueada}>
+            <FiPlus /> Nova venda
+          </button>
+          {novaVendaBloqueada && (
+            <span className="sales-action-tooltip" id="sales-new-sale-tooltip" role="tooltip">
+              {motivoBloqueioNovaVenda}
+            </span>
+          )}
+        </span>
       </header>
 
       <section className="sales-metrics" aria-label="Resumo do mês">

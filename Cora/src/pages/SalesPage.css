@@ -73,6 +73,65 @@
   background: #066b58;
 }
 
+.sales-new-sale-action {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.sales-new-sale-action.is-disabled {
+  cursor: not-allowed;
+}
+
+.sales-new-sale-action:focus-visible {
+  outline: 2px solid #087f68;
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.sales-action-tooltip {
+  position: absolute;
+  z-index: 5;
+  right: 0;
+  bottom: calc(100% + 10px);
+  width: max-content;
+  max-width: min(300px, calc(100vw - 32px));
+  padding: 9px 12px;
+  border: 1px solid #34443f;
+  border-radius: 6px;
+  background: #202d29;
+  box-shadow: 0 5px 14px rgba(23, 43, 39, 0.16);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 140ms ease, transform 140ms ease;
+  visibility: hidden;
+}
+
+.sales-action-tooltip::after {
+  position: absolute;
+  right: 16px;
+  bottom: -5px;
+  width: 8px;
+  height: 8px;
+  border-right: 1px solid #34443f;
+  border-bottom: 1px solid #34443f;
+  background: #202d29;
+  content: '';
+  transform: rotate(45deg);
+}
+
+.sales-new-sale-action:hover .sales-action-tooltip,
+.sales-new-sale-action:focus .sales-action-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
 .sales-secondary-button {
   border: 1px solid #d3dadd;
   background: #fff;
