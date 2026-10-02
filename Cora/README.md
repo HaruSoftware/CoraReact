@@ -12,7 +12,8 @@ gera `JWT_SECRET`; `FRONTEND_URL` e `BACKEND_URL` devem apontar para o dominio
 do servico. Para login Google, configure tambem `GOOGLE_CLIENT_ID` e
 `GOOGLE_CLIENT_SECRET`, e cadastre
 `https://corareact.onrender.com/api/auth/google/callback` como URI de callback
-autorizada no Google.
+autorizada no Google. A migration 009, necessaria para registrar o criador da
+conta, e aplicada automaticamente antes de o servidor aceitar requisicoes.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

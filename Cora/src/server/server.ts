@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import { setupDatabase, testDatabaseConnection } from './db.js'
+import { aplicarMigracoes, setupDatabase, testDatabaseConnection } from './db.js'
 import categoriasRouter from './routes/categorias.js'
 import contasRouter from './routes/contas.js'
 import usuariosRouter from './routes/usuarios.js'
@@ -127,6 +127,15 @@ if (process.env.NODE_ENV === 'production') {
   })
 }
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`)
+async function iniciarServidor() {
+  await aplicarMigracoes()
+
+  app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`)
+  })
+}
+
+iniciarServidor().catch((error: unknown) => {
+  console.error('Falha ao iniciar o servidor ou aplicar migrações:', error)
+  process.exitCode = 1
 })

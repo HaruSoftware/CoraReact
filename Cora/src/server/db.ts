@@ -28,3 +28,14 @@ export async function setupDatabase() {
 
   console.log('Banco de dados configurado com sucesso!')
 }
+
+export async function aplicarMigracoes() {
+  const migrationPath = new URL(
+    '../../database/migrations/009_conta_usuario_criador.sql',
+    import.meta.url
+  )
+  const migration = await fs.readFile(migrationPath, 'utf-8')
+
+  await pool.query(migration)
+  console.log('Migrações do banco aplicadas com sucesso.')
+}
