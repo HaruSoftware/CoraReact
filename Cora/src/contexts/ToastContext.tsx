@@ -1,8 +1,7 @@
 import {
-  createContext,
-  useContext,
   useState,
   useCallback,
+  useMemo,
   type ReactNode,
 } from 'react'
 import {
@@ -12,29 +11,8 @@ import {
   FiInfo,
   FiX,
 } from 'react-icons/fi'
+import { ToastContext, type ToastItem, type ToastTipo } from './ToastContextValue'
 import './Toast.css'
-
-export type ToastTipo = 'success' | 'error' | 'warning' | 'info'
-
-export type ToastItem = {
-  id: string
-  tipo: ToastTipo
-  mensagem: string
-  titulo?: string
-  saindo?: boolean
-}
-
-type ToastContextData = {
-  toast: {
-    success: (mensagem: string, titulo?: string) => void
-    error: (mensagem: string, titulo?: string) => void
-    warning: (mensagem: string, titulo?: string) => void
-    info: (mensagem: string, titulo?: string) => void
-    show: (tipo: ToastTipo, mensagem: string, titulo?: string, duracao?: number) => void
-  }
-}
-
-const ToastContext = createContext<ToastContextData | undefined>(undefined)
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([])
@@ -78,7 +56,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     [removerToast]
   )
 
-  const toastMethods = {
+  const toastMethods = useMemo(() => ({
     success: (mensagem: string, titulo?: string) =>
       adicionarToast('success', mensagem, titulo),
     error: (mensagem: string, titulo?: string) =>
@@ -93,7 +71,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       titulo?: string,
       duracao?: number
     ) => adicionarToast(tipo, mensagem, titulo, duracao),
-  }
+  }), [adicionarToast])
+
+  const contextValue = useMemo(() => ({ toast: toastMethods }), [toastMethods])
 
   function renderIcone(tipo: ToastTipo) {
     switch (tipo) {
@@ -109,7 +89,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ToastContext.Provider value={{ toast: toastMethods }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
 
       {/* POPUP CONTAINER FLUTUANTE */}
@@ -141,14 +121,4 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       </div>
     </ToastContext.Provider>
   )
-}
-
-export function useToast() {
-  const context = useContext(ToastContext)
-
-  if (!context) {
-    throw new Error('useToast deve ser usado dentro de um ToastProvider.')
-  }
-
-  return context
 }

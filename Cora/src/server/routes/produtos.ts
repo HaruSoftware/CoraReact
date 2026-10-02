@@ -4,6 +4,14 @@ import { autenticar, type AuthRequest } from '../middleware/auth.js'
 
 const router = Router()
 
+function valorMonetarioValido(valor: unknown) {
+  if ((typeof valor !== 'number' && typeof valor !== 'string') || String(valor).trim() === '') {
+    return false
+  }
+
+  return Number.isFinite(Number(valor)) && Number(valor) >= 0
+}
+
 router.get('/', autenticar, async (req, res) => {
   try {
 
@@ -12,7 +20,7 @@ router.get('/', autenticar, async (req, res) => {
 
     const result = await pool.query(
             `SELECT id_produto, id_conta, id_categoria, nome, descricao,
-              codigo_barras, codigo_interno, preco, estoque, estoque_minimo,
+              codigo_barras, codigo_interno, custo, preco, estoque, estoque_minimo,
               unidade_medida, ativo, data_cadastro, data_atualizacao
       FROM produto
       WHERE id_conta = $1
@@ -38,6 +46,7 @@ router.post('/', autenticar, async (req, res) => {
       descricao,
       codigo_barras,
       codigo_interno,
+      custo,
       preco,
       estoque,
       estoque_minimo,
@@ -51,7 +60,8 @@ router.post('/', autenticar, async (req, res) => {
 
     if (
       !nome ||
-      preco === undefined ||
+      !valorMonetarioValido(custo) ||
+      !valorMonetarioValido(preco) ||
       estoque === undefined ||
       estoque_minimo === undefined ||
       !unidade_medida ||
@@ -59,7 +69,7 @@ router.post('/', autenticar, async (req, res) => {
     ) {
       return res.status(400).json({
         success: false,
-        message: 'Nome, preço, estoque, estoque mínimo, unidade e categoria são obrigatórios.',
+        message: 'Nome, custo, preço, estoque, estoque mínimo, unidade e categoria são obrigatórios.',
       })
     }
 
@@ -100,15 +110,16 @@ router.post('/', autenticar, async (req, res) => {
         descricao,
         codigo_barras,
         codigo_interno,
+        custo,
         preco,
         estoque,
         estoque_minimo,
         unidade_medida,
         ativo
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING id_produto, id_conta, id_categoria, nome, descricao,
-                codigo_barras, codigo_interno, preco, estoque, estoque_minimo,
+            codigo_barras, codigo_interno, custo, preco, estoque, estoque_minimo,
                 unidade_medida, ativo, data_cadastro, data_atualizacao`,
       [
         id_conta,
@@ -117,6 +128,7 @@ router.post('/', autenticar, async (req, res) => {
         descricao,
         codigo_barras || null,
         codigo_interno || null,
+        custo,
         preco,
         estoque,
         estoque_minimo,
@@ -145,6 +157,7 @@ router.put('/:id', autenticar, async (req, res) => {
       descricao,
       codigo_barras,
       codigo_interno,
+      custo,
       preco,
       estoque,
       estoque_minimo,
@@ -158,7 +171,8 @@ router.put('/:id', autenticar, async (req, res) => {
 
     if (
       !nome ||
-      preco === undefined ||
+      !valorMonetarioValido(custo) ||
+      !valorMonetarioValido(preco) ||
       estoque === undefined ||
       estoque_minimo === undefined ||
       !unidade_medida ||
@@ -166,7 +180,7 @@ router.put('/:id', autenticar, async (req, res) => {
     ) {
       return res.status(400).json({
         success: false,
-        message: 'Nome, preço, estoque, estoque mínimo, unidade e categoria são obrigatórios.',
+        message: 'Nome, custo, preço, estoque, estoque mínimo, unidade e categoria são obrigatórios.',
       })
     }
 
@@ -206,16 +220,17 @@ router.put('/:id', autenticar, async (req, res) => {
            descricao = $3,
            codigo_barras = $4,
            codigo_interno = $5,
-           preco = $6,
-           estoque = $7,
-           estoque_minimo = $8,
-           unidade_medida = $9,
-           ativo = $10,
+           custo = $6,
+           preco = $7,
+           estoque = $8,
+           estoque_minimo = $9,
+           unidade_medida = $10,
+           ativo = $11,
            data_atualizacao = CURRENT_TIMESTAMP
-       WHERE id_produto = $11
-       AND id_conta = $12
+       WHERE id_produto = $12
+       AND id_conta = $13
        RETURNING id_produto, id_conta, id_categoria, nome, descricao,
-                 codigo_barras, codigo_interno, preco, estoque, estoque_minimo,
+                 codigo_barras, codigo_interno, custo, preco, estoque, estoque_minimo,
                  unidade_medida, ativo, data_cadastro, data_atualizacao`,
       [
         id_categoria,
@@ -223,6 +238,7 @@ router.put('/:id', autenticar, async (req, res) => {
         descricao,
         codigo_barras || null,
         codigo_interno || null,
+        custo,
         preco,
         estoque,
         estoque_minimo,

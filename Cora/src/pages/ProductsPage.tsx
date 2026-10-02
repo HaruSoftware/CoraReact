@@ -10,7 +10,7 @@ import {
 } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
-import { useToast } from '../contexts/ToastContext'
+import { useToast } from '../contexts/ToastContextValue'
 import './ProductsPage.css'
 
 type Produto = {
@@ -21,6 +21,7 @@ type Produto = {
   descricao: string | null
   codigo_barras: string | null
   codigo_interno: string | null
+  custo: number | string
   preco: number | string
   estoque: number
   estoque_minimo: number
@@ -47,6 +48,8 @@ type ProdutoForm = {
   descricao: string
   codigo_barras: string
   codigo_interno: string
+  custo: string
+  markup: string
   preco: string
   estoque: string
   estoque_minimo: string
@@ -60,6 +63,8 @@ const formularioInicial: ProdutoForm = {
   descricao: '',
   codigo_barras: '',
   codigo_interno: '',
+  custo: '',
+  markup: '',
   preco: '',
   estoque: '0',
   estoque_minimo: '0',
@@ -73,6 +78,42 @@ function formatarPreco(preco: number | string) {
     style: 'currency',
     currency: 'BRL',
   })
+}
+
+function converterValor(valor: string) {
+  const normalizado = valor.trim().replace(',', '.')
+  const numero = Number(normalizado)
+  return normalizado && Number.isFinite(numero) ? numero : null
+}
+
+function formatarValorInput(valor: number) {
+  return (Math.round((valor + Number.EPSILON) * 100) / 100).toFixed(2)
+}
+
+function calcularMarkup(custo: string, preco: string) {
+  const custoNumerico = converterValor(custo)
+  const precoNumerico = converterValor(preco)
+
+  if (custoNumerico === null || precoNumerico === null || precoNumerico <= 0) return ''
+  return formatarValorInput((custoNumerico / precoNumerico) * 100)
+}
+
+function calcularPreco(custo: string, markup: string) {
+  const custoNumerico = converterValor(custo)
+  const markupNumerico = converterValor(markup)
+
+  if (custoNumerico === null || markupNumerico === null || markupNumerico <= 0) return ''
+  return formatarValorInput((custoNumerico * 100) / markupNumerico)
+}
+
+function formatarMarkup(custo: number | string, preco: number | string) {
+  const markup = calcularMarkup(String(custo), String(preco))
+  if (markup === '') return 'Não calculado'
+
+  return `${Number(markup).toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}%`
 }
 
 function ProductsPage() {
@@ -169,6 +210,8 @@ function ProductsPage() {
       descricao: produto.descricao || '',
       codigo_barras: produto.codigo_barras || '',
       codigo_interno: produto.codigo_interno || '',
+      custo: String(produto.custo),
+      markup: calcularMarkup(String(produto.custo), String(produto.preco)),
       preco: String(produto.preco),
       estoque: String(produto.estoque),
       estoque_minimo: String(produto.estoque_minimo),
@@ -182,20 +225,43 @@ function ProductsPage() {
     setFormulario((atual) => ({ ...atual, [campo]: valor }))
   }
 
+  function atualizarCusto(valor: string) {
+    setFormulario((atual) => {
+      const preco = calcularPreco(valor, atual.markup)
+      return { ...atual, custo: valor, ...(preco !== '' ? { preco } : {}) }
+    })
+  }
+
+  function atualizarMarkup(valor: string) {
+    setFormulario((atual) => {
+      const preco = calcularPreco(atual.custo, valor)
+      return { ...atual, markup: valor, ...(preco !== '' ? { preco } : {}) }
+    })
+  }
+
+  function atualizarPreco(valor: string) {
+    setFormulario((atual) => ({
+      ...atual,
+      preco: valor,
+      markup: calcularMarkup(atual.custo, valor),
+    }))
+  }
+
   async function handleSalvarProduto(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (!formulario.nome.trim() || !formulario.preco || !formulario.id_categoria) {
-      toast.warning('Nome, preço e categoria são obrigatórios.')
+    if (!formulario.nome.trim() || !formulario.custo.trim() || !formulario.preco.trim() || !formulario.id_categoria) {
+      toast.warning('Nome, custo, preço e categoria são obrigatórios.')
       return
     }
 
-    const preco = Number(formulario.preco.replace(',', '.'))
+    const custo = converterValor(formulario.custo)
+    const preco = converterValor(formulario.preco)
     const estoque = Number(formulario.estoque)
     const estoqueMinimo = Number(formulario.estoque_minimo)
 
-    if (!Number.isFinite(preco) || preco < 0 || !Number.isInteger(estoque) || estoque < 0 || !Number.isInteger(estoqueMinimo) || estoqueMinimo < 0) {
-      toast.warning('Informe preço, estoque e estoque mínimo válidos.')
+    if (custo === null || custo < 0 || preco === null || preco < 0 || !Number.isInteger(estoque) || estoque < 0 || !Number.isInteger(estoqueMinimo) || estoqueMinimo < 0) {
+      toast.warning('Informe custo, preço, estoque e estoque mínimo válidos.')
       return
     }
 
@@ -208,6 +274,7 @@ function ProductsPage() {
           descricao: formulario.descricao.trim() || null,
           codigo_barras: formulario.codigo_barras.trim() || null,
           codigo_interno: formulario.codigo_interno.trim() || null,
+          custo,
           preco,
           estoque,
           estoque_minimo: estoqueMinimo,
@@ -384,7 +451,9 @@ function ProductsPage() {
             </div>
             <div className="product-detail-grid">
               <div><span>Categoria</span><strong>{nomeCategoria(produtoSelecionado.id_categoria)}</strong></div>
+              <div><span>Custo</span><strong>{formatarPreco(produtoSelecionado.custo)}</strong></div>
               <div><span>Preço</span><strong>{formatarPreco(produtoSelecionado.preco)}</strong></div>
+              <div><span>Markup</span><strong>{formatarMarkup(produtoSelecionado.custo, produtoSelecionado.preco)}</strong></div>
               <div><span>Estoque disponível</span><strong>{produtoSelecionado.estoque} {produtoSelecionado.unidade_medida}</strong></div>
               <div><span>Estoque mínimo</span><strong>{produtoSelecionado.estoque_minimo} {produtoSelecionado.unidade_medida}</strong></div>
               <div><span>Unidade</span><strong>{produtoSelecionado.unidade_medida}</strong></div>
@@ -443,8 +512,16 @@ function ProductsPage() {
                 </span>
               </label>
               <label>
-                Preço
-                <input type="text" inputMode="decimal" value={formulario.preco} onChange={(event) => atualizarCampo('preco', event.target.value)} placeholder="0,00" required />
+                Custo
+                <input type="text" inputMode="decimal" value={formulario.custo} onChange={(event) => atualizarCusto(event.target.value)} placeholder="0,00" required />
+              </label>
+              <label>
+                Markup (%)
+                <input type="text" inputMode="decimal" value={formulario.markup} onChange={(event) => atualizarMarkup(event.target.value)} placeholder="Ex.: 50" />
+              </label>
+              <label>
+                Preço de venda
+                <input type="text" inputMode="decimal" value={formulario.preco} onChange={(event) => atualizarPreco(event.target.value)} placeholder="0,00" required />
               </label>
               <label>
                 Estoque inicial

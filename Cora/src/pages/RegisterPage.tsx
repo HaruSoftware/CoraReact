@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useAuth } from '../contexts/AuthContext'
-import { useToast } from '../contexts/ToastContext'
+import { useAuth } from '../contexts/AuthContextValue'
+import { useToast } from '../contexts/ToastContextValue'
 import { FcGoogle } from 'react-icons/fc'
 import './RegisterPage.css'
 import { useNavigate } from 'react-router-dom'

@@ -50,6 +50,7 @@ um plano no próximo acesso.
 - descricao
 - codigo_barras (opcional)
 - codigo_interno (opcional)
+- custo
 - preco
 - estoque
 - estoque_minimo
@@ -57,6 +58,10 @@ um plano no próximo acesso.
 - ativo
 - data_cadastro
 - data_atualizacao
+
+O markup é calculado no cadastro como custo / preço de venda, exibido em
+percentual e não armazenado. O preço sugerido é custo / (markup / 100); editar
+custo ou markup recalcula o preço, e editar o preço recalcula o markup.
 
 ---
 

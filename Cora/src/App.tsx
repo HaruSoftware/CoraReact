@@ -9,15 +9,17 @@ import CategoriesPage from './pages/CategoriesPage'
 import CustomersPage from './pages/CustomersPage'
 import SalesPage from './pages/SalesPage'
 import PlanSelectionPage from './pages/PlanSelectionPage'
+import AppLoading from './components/AppLoading'
 
-import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { AuthProvider } from './contexts/AuthContext'
+import { useAuth } from './contexts/AuthContextValue'
 import { ToastProvider } from './contexts/ToastContext'
 
 function AppContent() {
   const { usuario, carregando } = useAuth()
 
   if (carregando) {
-    return <p>Carregando...</p>
+    return <AppLoading />
   }
 
   return (

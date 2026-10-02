@@ -11,7 +11,7 @@ import {
 } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
-import { useToast } from '../contexts/ToastContext'
+import { useToast } from '../contexts/ToastContextValue'
 import './CustomersPage.css'
 
 type Cliente = {

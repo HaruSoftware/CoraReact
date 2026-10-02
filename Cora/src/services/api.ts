@@ -25,14 +25,13 @@ export function urlDaApi(endpoint: string) {
 }
 
 type ApiOptions = RequestInit & {
-  token?: string
 }
 
 export async function api(
   endpoint: string,
   options: ApiOptions = {}
 ) {
-  const { token, headers, ...fetchOptions } = options
+  const { headers, ...fetchOptions } = options
 
   const response = await fetch(urlDaApi(endpoint), {
     ...fetchOptions,

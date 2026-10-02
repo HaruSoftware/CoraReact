@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS produto (
     descricao TEXT,
     codigo_barras VARCHAR(14),
     codigo_interno VARCHAR(50),
+    custo NUMERIC(10, 2) NOT NULL DEFAULT 0,
     preco DECIMAL(10, 2) NOT NULL,
     estoque INTEGER NOT NULL DEFAULT 0,
     estoque_minimo INTEGER NOT NULL DEFAULT 0,
@@ -102,11 +103,23 @@ CREATE TABLE IF NOT EXISTS produto (
 
 ALTER TABLE produto ADD COLUMN IF NOT EXISTS codigo_barras VARCHAR(14);
 ALTER TABLE produto ADD COLUMN IF NOT EXISTS codigo_interno VARCHAR(50);
+ALTER TABLE produto ADD COLUMN IF NOT EXISTS custo NUMERIC(10, 2) NOT NULL DEFAULT 0;
 ALTER TABLE produto ADD COLUMN IF NOT EXISTS estoque_minimo INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE produto ADD COLUMN IF NOT EXISTS unidade_medida VARCHAR(10) NOT NULL DEFAULT 'UN';
 ALTER TABLE produto ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT TRUE;
 ALTER TABLE produto ADD COLUMN IF NOT EXISTS data_cadastro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE produto ADD COLUMN IF NOT EXISTS data_atualizacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conname = 'ck_produto_custo' AND conrelid = 'produto'::regclass
+    ) THEN
+        ALTER TABLE produto
+            ADD CONSTRAINT ck_produto_custo CHECK (custo >= 0);
+    END IF;
+END $$;
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_produto_codigo_barras_conta
     ON produto (id_conta, codigo_barras)

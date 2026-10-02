@@ -13,8 +13,8 @@ import {
 } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
-import { useAuth } from '../contexts/AuthContext'
-import { useToast } from '../contexts/ToastContext'
+import { useAuth } from '../contexts/AuthContextValue'
+import { useToast } from '../contexts/ToastContextValue'
 import './SettingsPage.css'
 
 type Usuario = {
@@ -38,6 +38,10 @@ type Assinatura = {
   valor_mensal: string | number
   data_fim_periodo: string
   demonstrativo: boolean
+}
+
+function mensagemDoErro(error: unknown, mensagemPadrao: string) {
+  return error instanceof Error ? error.message : mensagemPadrao
 }
 
 function SettingsPage() {
@@ -85,36 +89,43 @@ function SettingsPage() {
   const [confirmacaoExcluirConta, setConfirmacaoExcluirConta] = useState('')
   const [excluindoConta, setExcluindoConta] = useState(false)
 
-  async function carregarDados() {
-    try {
-      setCarregandoUsuarios(true)
-      const [contaData, usuariosData, unidadesData, assinaturaData] = await Promise.all([
-        api('/contas/me'),
-        api('/usuarios'),
-        api('/unidades-medida'),
-        api('/assinaturas/me'),
-      ])
-
-      setNome(contaData.conta.nome)
-      setEmail(contaData.conta.email)
-      setNomeOriginal(contaData.conta.nome)
-      setEmailOriginal(contaData.conta.email)
-
-      setUsuarios(Array.isArray(usuariosData) ? usuariosData : [])
-      setUnidades(Array.isArray(unidadesData) ? unidadesData : [])
-      setAssinatura(assinaturaData.assinatura)
-    } catch (error: any) {
-      console.error('Erro ao carregar configurações:', error)
-      toast.error('Erro ao carregar dados da conta e usuários.')
-    } finally {
-      setCarregandoUsuarios(false)
-      setCarregandoAssinatura(false)
-    }
-  }
-
   useEffect(() => {
-    carregarDados()
-  }, [])
+    let cancelado = false
+
+    Promise.all([
+      api('/contas/me'),
+      api('/usuarios'),
+      api('/unidades-medida'),
+      api('/assinaturas/me'),
+    ])
+      .then(([contaData, usuariosData, unidadesData, assinaturaData]) => {
+        if (cancelado) return
+
+        setNome(contaData.conta.nome)
+        setEmail(contaData.conta.email)
+        setNomeOriginal(contaData.conta.nome)
+        setEmailOriginal(contaData.conta.email)
+        setUsuarios(Array.isArray(usuariosData) ? usuariosData : [])
+        setUnidades(Array.isArray(unidadesData) ? unidadesData : [])
+        setAssinatura(assinaturaData.assinatura)
+      })
+      .catch((error: unknown) => {
+        if (cancelado) return
+
+        console.error('Erro ao carregar configurações:', error)
+        toast.error('Erro ao carregar dados da conta e usuários.')
+      })
+      .finally(() => {
+        if (cancelado) return
+
+        setCarregandoUsuarios(false)
+        setCarregandoAssinatura(false)
+      })
+
+    return () => {
+      cancelado = true
+    }
+  }, [toast])
 
   async function criarUnidade() {
     if (!novoCodigoUnidade.trim() || !novoNomeUnidade.trim()) {
@@ -132,8 +143,8 @@ function SettingsPage() {
       setNovoCodigoUnidade('')
       setNovoNomeUnidade('')
       toast.success('Unidade de medida adicionada.')
-    } catch (error: any) {
-      toast.error(error.message || 'Não foi possível adicionar a unidade.')
+    } catch (error: unknown) {
+      toast.error(mensagemDoErro(error, 'Não foi possível adicionar a unidade.'))
     } finally {
       setSalvandoUnidade(false)
     }
@@ -147,8 +158,8 @@ function SettingsPage() {
       })
       setUnidades((atuais) => atuais.map((item) => item.id_unidade_medida === atualizada.id_unidade_medida ? atualizada : item))
       toast.success(atualizada.ativo ? 'Unidade liberada para uso.' : 'Unidade bloqueada.')
-    } catch (error: any) {
-      toast.error(error.message || 'Não foi possível atualizar a unidade.')
+    } catch (error: unknown) {
+      toast.error(mensagemDoErro(error, 'Não foi possível atualizar a unidade.'))
     }
   }
 
@@ -174,9 +185,9 @@ function SettingsPage() {
       setEmailOriginal(email.trim())
       setEditando(false)
       toast.success('Informações da empresa atualizadas com sucesso!')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar conta:', error)
-      toast.error(error.message || 'Erro ao atualizar dados da conta.')
+      toast.error(mensagemDoErro(error, 'Erro ao atualizar dados da conta.'))
     } finally {
       setSalvando(false)
     }
@@ -209,9 +220,9 @@ function SettingsPage() {
       setNovoEmail('')
       setNovaSenha('')
       toast.success('Novo usuário adicionado com sucesso!')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao criar usuário:', error)
-      toast.error(error.message || 'Erro ao criar usuário.')
+      toast.error(mensagemDoErro(error, 'Erro ao criar usuário.'))
     } finally {
       setSalvandoUsuario(false)
     }
@@ -259,9 +270,9 @@ function SettingsPage() {
       setModalEditarUsuarioAberto(false)
       setUsuarioSelecionado(null)
       toast.success('Dados do usuário atualizados com sucesso!')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao editar usuário:', error)
-      toast.error(error.message || 'Erro ao atualizar usuário.')
+      toast.error(mensagemDoErro(error, 'Erro ao atualizar usuário.'))
     } finally {
       setSalvandoUsuario(false)
     }
@@ -288,9 +299,9 @@ function SettingsPage() {
       setModalExcluirUsuarioAberto(false)
       setUsuarioSelecionado(null)
       toast.success('Usuário removido com sucesso!')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao excluir usuário:', error)
-      toast.error(error.message || 'Erro ao excluir usuário.')
+      toast.error(mensagemDoErro(error, 'Erro ao excluir usuário.'))
     } finally {
       setSalvandoUsuario(false)
     }
@@ -314,9 +325,9 @@ function SettingsPage() {
       setModalExcluirContaAberto(false)
       await logout()
       navigate('/login')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao excluir conta:', error)
-      toast.error(error.message || 'Erro ao excluir conta.')
+      toast.error(mensagemDoErro(error, 'Erro ao excluir conta.'))
     } finally {
       setExcluindoConta(false)
     }

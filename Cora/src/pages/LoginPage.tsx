@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useAuth } from '../contexts/AuthContext'
-import { useToast } from '../contexts/ToastContext'
+import { useAuth } from '../contexts/AuthContextValue'
+import { useToast } from '../contexts/ToastContextValue'
 import { urlDaApi } from '../services/api'
 import './LoginPage.css'
 import { FcGoogle } from 'react-icons/fc'
@@ -25,7 +25,7 @@ function LoginPage() {
     try {
       await login(email, senha)
       toast.success('Login realizado com sucesso!')
-    } catch (error: any) {
+    } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Erro ao realizar login.'
       setErro(msg)
       toast.error(msg)
