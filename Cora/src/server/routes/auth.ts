@@ -144,7 +144,7 @@ router.post('/register', async (req, res) => {
         if (usuarioExistente.rows.length > 0) {
             return res.status(409).json({
                 success: false,
-                message: 'Este e-mail de usuário já está cadastrado.',
+                message: 'Este e-mail já está cadastrado. Faça login para continuar.',
             })
         }
 

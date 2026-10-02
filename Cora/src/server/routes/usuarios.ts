@@ -17,8 +17,9 @@ router.get('/', autenticar, async (req, res) => {
         const id_conta = request.usuario!.id_conta
 
         const result = await pool.query(
-                `SELECT id_usuario, id_conta, nome, email,
-                    (google_id IS NOT NULL) AS conta_google
+                    `SELECT id_usuario, id_conta, nome, email,
+                        (google_id IS NOT NULL) AS conta_google,
+                        (senha IS NOT NULL) AS conta_senha
              FROM usuario
              WHERE id_conta = $1
              ORDER BY id_usuario`,
@@ -76,7 +77,9 @@ router.post('/', autenticar, async (req, res) => {
                 senha
             )
             VALUES ($1, $2, $3, $4)
-            RETURNING id_usuario, id_conta, nome, email`,
+            RETURNING id_usuario, id_conta, nome, email,
+                      (google_id IS NOT NULL) AS conta_google,
+                      (senha IS NOT NULL) AS conta_senha`,
             [id_conta, nome, emailNormalizado, senhaHash]
         )
 

@@ -117,8 +117,17 @@ e contas a receber.
 - **id_conta** (FK)
 - nome
 - email (único globalmente após remover espaços externos e ignorar maiúsculas/minúsculas)
-- senha (opcional para usuarios google)
-- google_id (UNIQUE, OPCIONAL)
+- senha (hash opcional; permite acesso por e-mail e senha)
+- google_id (UNIQUE global, opcional; permite acesso com Google)
+
+O usuário pode ter acesso por e-mail e senha, por Google ou pelos dois métodos
+quando a identidade Google é vinculada ao usuário existente. Ao adicionar um
+usuário por Google dentro das Configurações, a autenticação comprova a identidade
+e o usuário é associado à conta atual sem senha. A inclusão por e-mail e senha
+continua disponível como método separado.
+
+No cadastro público, um e-mail de usuário já existente é recusado e orientado
+a entrar, em vez de criar uma nova conta empresarial.
 
 ---
 

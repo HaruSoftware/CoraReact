@@ -11,6 +11,7 @@ import {
   FiPlus,
   FiX,
   FiBox,
+  FiMail,
 } from 'react-icons/fi'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api, urlDaApi } from '../services/api'
@@ -24,6 +25,7 @@ type Usuario = {
   nome: string
   email: string
   conta_google: boolean
+  conta_senha: boolean
 }
 
 type UnidadeMedida = {
@@ -77,6 +79,10 @@ function SettingsPage() {
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<Usuario | null>(null)
 
   const [salvandoUsuario, setSalvandoUsuario] = useState(false)
+  const [metodoAcessoNovoUsuario, setMetodoAcessoNovoUsuario] = useState<'senha' | 'google'>('senha')
+  const [novoNome, setNovoNome] = useState('')
+  const [novoEmail, setNovoEmail] = useState('')
+  const [novaSenha, setNovaSenha] = useState('')
 
   // Formulário Editar Usuário
   const [editNome, setEditNome] = useState('')
@@ -214,6 +220,43 @@ function SettingsPage() {
 
   function adicionarUsuarioComGoogle() {
     window.location.href = urlDaApi('/auth/google/link')
+  }
+
+  function abrirModalNovoUsuario() {
+    setMetodoAcessoNovoUsuario('senha')
+    setNovoNome('')
+    setNovoEmail('')
+    setNovaSenha('')
+    setModalNovoUsuarioAberto(true)
+  }
+
+  async function handleCriarUsuario(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (!novoNome.trim() || !novoEmail.trim() || !novaSenha) {
+      toast.warning('Preencha nome, e-mail e senha.')
+      return
+    }
+
+    try {
+      setSalvandoUsuario(true)
+      const usuarioCriado = await api('/usuarios', {
+        method: 'POST',
+        body: JSON.stringify({
+          nome: novoNome.trim(),
+          email: novoEmail.trim(),
+          senha: novaSenha,
+        }),
+      })
+
+      setUsuarios((atuais) => [...atuais, usuarioCriado])
+      setModalNovoUsuarioAberto(false)
+      toast.success('Usuário com e-mail e senha adicionado à equipe.')
+    } catch (error: unknown) {
+      toast.error(mensagemDoErro(error, 'Não foi possível adicionar o usuário.'))
+    } finally {
+      setSalvandoUsuario(false)
+    }
   }
 
   // Abrir Modal de Edição de Usuário
@@ -491,7 +534,7 @@ function SettingsPage() {
 
             <button
               className="primary-button add-user-header-btn"
-              onClick={() => setModalNovoUsuarioAberto(true)}
+              onClick={abrirModalNovoUsuario}
             >
               <FiPlus /> Adicionar usuário
             </button>
@@ -512,7 +555,7 @@ function SettingsPage() {
                 <p>Adicione membros à sua equipe para colaborarem no sistema.</p>
                 <button
                   className="primary-button"
-                  onClick={() => setModalNovoUsuarioAberto(true)}
+                  onClick={abrirModalNovoUsuario}
                 >
                   <FiPlus /> Adicionar primeiro usuário
                 </button>
@@ -533,7 +576,10 @@ function SettingsPage() {
                           <div className="user-name-wrapper">
                             <strong>{u.nome}</strong>
                             {u.conta_google && (
-                              <span className="user-badge-google"><FcGoogle aria-hidden="true" /> Google</span>
+                              <span className="user-badge-google"><FcGoogle aria-hidden="true" /> Conta Google</span>
+                            )}
+                            {u.conta_senha && (
+                              <span className="user-badge-password"><FiMail aria-hidden="true" /> E-mail e senha</span>
                             )}
                             {ehUsuarioLogado && (
                               <span className="user-badge-current">Você</span>
@@ -657,12 +703,12 @@ function SettingsPage() {
           <div className="modal-container" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div className="modal-title-wrap">
-                <div className="modal-icon google-user-modal-icon">
-                  <FcGoogle />
+                <div className={metodoAcessoNovoUsuario === 'google' ? 'modal-icon google-user-modal-icon' : 'modal-icon'}>
+                  {metodoAcessoNovoUsuario === 'google' ? <FcGoogle /> : <FiMail />}
                 </div>
                 <div>
-                  <h3>Adicionar conta Google</h3>
-                  <p>Conecte uma conta Google à sua equipe.</p>
+                  <h3>Adicionar usuário</h3>
+                  <p>Escolha como essa pessoa vai acessar a conta.</p>
                 </div>
               </div>
               <button
@@ -673,26 +719,55 @@ function SettingsPage() {
               </button>
             </div>
 
-            <div className="google-user-invitation">
-              <p>A pessoa fará login com a própria conta Google. Não é necessário criar ou compartilhar uma senha.</p>
-              <div className="user-form-actions">
-                <button
-                  type="button"
-                  className="secondary-button"
-                  onClick={() => setModalNovoUsuarioAberto(false)}
-                  disabled={salvandoUsuario}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  className="primary-button"
-                  onClick={adicionarUsuarioComGoogle}
-                >
-                  <FcGoogle aria-hidden="true" /> Continuar com Google
-                </button>
-              </div>
+            <div className="user-method-picker" role="group" aria-label="Método de acesso do usuário">
+              <button
+                type="button"
+                className={metodoAcessoNovoUsuario === 'senha' ? 'user-method-option active' : 'user-method-option'}
+                aria-pressed={metodoAcessoNovoUsuario === 'senha'}
+                onClick={() => setMetodoAcessoNovoUsuario('senha')}
+              >
+                <FiMail aria-hidden="true" /> E-mail e senha
+              </button>
+              <button
+                type="button"
+                className={metodoAcessoNovoUsuario === 'google' ? 'user-method-option active' : 'user-method-option'}
+                aria-pressed={metodoAcessoNovoUsuario === 'google'}
+                onClick={() => setMetodoAcessoNovoUsuario('google')}
+              >
+                <FcGoogle aria-hidden="true" /> Conta Google
+              </button>
             </div>
+
+            {metodoAcessoNovoUsuario === 'senha' ? (
+              <form onSubmit={handleCriarUsuario} className="user-form">
+                <div className="user-form-group">
+                  <label htmlFor="new-user-name">Nome completo</label>
+                  <input id="new-user-name" type="text" placeholder="Nome do colaborador" value={novoNome} onChange={(event) => setNovoNome(event.target.value)} required autoFocus />
+                </div>
+                <div className="user-form-group">
+                  <label htmlFor="new-user-email">E-mail</label>
+                  <input id="new-user-email" type="email" placeholder="colaborador@empresa.com" value={novoEmail} onChange={(event) => setNovoEmail(event.target.value)} required />
+                </div>
+                <div className="user-form-group">
+                  <label htmlFor="new-user-password">Senha provisória</label>
+                  <input id="new-user-password" type="password" placeholder="Mínimo 4 caracteres" value={novaSenha} onChange={(event) => setNovaSenha(event.target.value)} required minLength={4} />
+                </div>
+                <div className="user-form-actions">
+                  <button type="button" className="secondary-button" onClick={() => setModalNovoUsuarioAberto(false)} disabled={salvandoUsuario}>Cancelar</button>
+                  <button type="submit" className="primary-button" disabled={salvandoUsuario}>{salvandoUsuario ? 'Salvando...' : 'Criar usuário'}</button>
+                </div>
+              </form>
+            ) : (
+              <div className="google-user-invitation">
+                <p>A pessoa fará login com a própria conta Google. Não é necessário criar ou compartilhar uma senha.</p>
+                <div className="user-form-actions">
+                  <button type="button" className="secondary-button" onClick={() => setModalNovoUsuarioAberto(false)}>Cancelar</button>
+                  <button type="button" className="primary-button" onClick={adicionarUsuarioComGoogle}>
+                    <FcGoogle aria-hidden="true" /> Continuar com Google
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
