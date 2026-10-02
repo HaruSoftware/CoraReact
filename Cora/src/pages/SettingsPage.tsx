@@ -730,23 +730,6 @@ function SettingsPage() {
             </div>
           </div>
 
-          <div className="danger-card">
-            <div>
-              <strong>Excluir conta</strong>
-              <p>Exclui permanentemente a conta e todos os dados associados a ela.</p>
-            </div>
-
-            <button
-              className="danger-button"
-              onClick={() => {
-                setConfirmacaoExcluirConta('')
-                setModalExcluirContaAberto(true)
-              }}
-            >
-              Excluir conta
-            </button>
-          </div>
-
           {(Object.entries(areasDeDados) as [AreaDados, (typeof areasDeDados)[AreaDados]][]).map(([area, dados]) => (
             <div className="danger-card" key={area}>
               <div>
@@ -764,6 +747,23 @@ function SettingsPage() {
               </button>
             </div>
           ))}
+
+          <div className="danger-card">
+            <div>
+              <strong>Excluir conta</strong>
+              <p>Exclui permanentemente a conta e todos os dados associados a ela.</p>
+            </div>
+
+            <button
+              className="danger-button"
+              onClick={() => {
+                setConfirmacaoExcluirConta('')
+                setModalExcluirContaAberto(true)
+              }}
+            >
+              Excluir conta
+            </button>
+          </div>
         </section>
         )}
       </div>
