@@ -17,6 +17,7 @@ import './ReportsPage.css'
 type FormatoColuna = 'texto' | 'numero' | 'moeda' | 'data'
 type ColunaRelatorio = { chave: string; rotulo: string; formato?: FormatoColuna }
 type TipoRelatorio = 'vendas' | 'financeiro' | 'produtos' | 'categorias' | 'vendedores' | 'clientes' | 'estoque'
+type LinhaRelatorio = Record<string, unknown>
 
 type DefinicaoRelatorio = {
   tipo: TipoRelatorio
@@ -25,6 +26,13 @@ type DefinicaoRelatorio = {
   icone: typeof FiFileText
   colunas: ColunaRelatorio[]
   usaPeriodo?: boolean
+  grafico: {
+    titulo: string
+    rotulo: string
+    chave: string
+    formato: 'numero' | 'moeda'
+    tipo: 'diario' | 'ranking'
+  }
 }
 
 const RELATORIOS: DefinicaoRelatorio[] = [
@@ -33,6 +41,7 @@ const RELATORIOS: DefinicaoRelatorio[] = [
     titulo: 'Vendas realizadas',
     descricao: 'Consulte cada venda, cliente, responsável, quantidade de itens, descontos e valor final.',
     icone: FiShoppingBag,
+    grafico: { titulo: 'Faturamento diário', rotulo: 'Faturamento', chave: 'total', formato: 'moeda', tipo: 'diario' },
     colunas: [
       { chave: 'id_venda', rotulo: 'Nº venda', formato: 'numero' },
       { chave: 'data', rotulo: 'Data', formato: 'data' },
@@ -49,6 +58,7 @@ const RELATORIOS: DefinicaoRelatorio[] = [
     titulo: 'Resumo financeiro',
     descricao: 'Veja por dia o volume vendido, subtotal, descontos concedidos, faturamento e ticket médio.',
     icone: FiBarChart2,
+    grafico: { titulo: 'Faturamento diário', rotulo: 'Faturamento', chave: 'faturamento', formato: 'moeda', tipo: 'diario' },
     colunas: [
       { chave: 'dia', rotulo: 'Dia', formato: 'data' },
       { chave: 'vendas', rotulo: 'Vendas', formato: 'numero' },
@@ -63,6 +73,7 @@ const RELATORIOS: DefinicaoRelatorio[] = [
     titulo: 'Produtos vendidos',
     descricao: 'Identifique os itens mais vendidos, a categoria de cada um e o faturamento gerado.',
     icone: FiPackage,
+    grafico: { titulo: 'Produtos por faturamento', rotulo: 'Produto', chave: 'faturamento', formato: 'moeda', tipo: 'ranking' },
     colunas: [
       { chave: 'codigo', rotulo: 'Código' },
       { chave: 'produto', rotulo: 'Produto' },
@@ -76,6 +87,7 @@ const RELATORIOS: DefinicaoRelatorio[] = [
     titulo: 'Vendas por categoria',
     descricao: 'Compare categorias pelo número de vendas, produtos, unidades comercializadas e faturamento.',
     icone: FiLayers,
+    grafico: { titulo: 'Faturamento por categoria', rotulo: 'Categoria', chave: 'faturamento', formato: 'moeda', tipo: 'ranking' },
     colunas: [
       { chave: 'categoria', rotulo: 'Categoria' },
       { chave: 'vendas', rotulo: 'Vendas', formato: 'numero' },
@@ -89,6 +101,7 @@ const RELATORIOS: DefinicaoRelatorio[] = [
     titulo: 'Desempenho de vendedores',
     descricao: 'Compare vendas realizadas, faturamento e ticket médio por integrante da equipe.',
     icone: FiUsers,
+    grafico: { titulo: 'Faturamento por vendedor', rotulo: 'Vendedor', chave: 'faturamento', formato: 'moeda', tipo: 'ranking' },
     colunas: [
       { chave: 'vendedor', rotulo: 'Vendedor' },
       { chave: 'vendas', rotulo: 'Vendas', formato: 'numero' },
@@ -101,6 +114,7 @@ const RELATORIOS: DefinicaoRelatorio[] = [
     titulo: 'Compras por cliente',
     descricao: 'Saiba quem mais compra, quantas compras realizou e quanto movimentou no período.',
     icone: FiUsers,
+    grafico: { titulo: 'Clientes por faturamento', rotulo: 'Cliente', chave: 'faturamento', formato: 'moeda', tipo: 'ranking' },
     colunas: [
       { chave: 'cliente', rotulo: 'Cliente' },
       { chave: 'tipo', rotulo: 'Tipo' },
@@ -115,6 +129,7 @@ const RELATORIOS: DefinicaoRelatorio[] = [
     descricao: 'Confira estoque atual, mínimo, preço, valor em estoque e produtos que precisam de reposição.',
     icone: FiBox,
     usaPeriodo: false,
+    grafico: { titulo: 'Valor potencial de venda por produto', rotulo: 'Produto', chave: 'valor_potencial_venda', formato: 'moeda', tipo: 'ranking' },
     colunas: [
       { chave: 'codigo', rotulo: 'Código' },
       { chave: 'produto', rotulo: 'Produto' },
@@ -153,6 +168,110 @@ function valorFormatado(valor: unknown, formato: FormatoColuna = 'texto') {
       : String(valor)
   }
   return String(valor)
+}
+
+function numero(valor: unknown) {
+  const resultado = Number(valor)
+  return Number.isFinite(resultado) ? resultado : 0
+}
+
+function resumoRelatorio(tipo: TipoRelatorio, linhas: LinhaRelatorio[]) {
+  const soma = (chave: string) => linhas.reduce((total, linha) => total + numero(linha[chave]), 0)
+  const primeiro = (rotulo: string, valor: string) => ({ rotulo, valor })
+
+  switch (tipo) {
+    case 'vendas': {
+      const faturamento = soma('total')
+      const descontos = soma('desconto')
+      return [
+        primeiro('Vendas realizadas', valorFormatado(linhas.length, 'numero')),
+        primeiro('Faturamento líquido', valorFormatado(faturamento, 'moeda')),
+        primeiro('Ticket médio', valorFormatado(linhas.length ? faturamento / linhas.length : 0, 'moeda')),
+        primeiro('Descontos concedidos', valorFormatado(descontos, 'moeda')),
+      ]
+    }
+    case 'financeiro': {
+      const diasComVenda = linhas.filter((linha) => numero(linha.vendas) > 0).length
+      const totalVendas = soma('vendas')
+      return [
+        primeiro('Faturamento', valorFormatado(soma('faturamento'), 'moeda')),
+        primeiro('Vendas realizadas', valorFormatado(totalVendas, 'numero')),
+        primeiro('Ticket médio do período', valorFormatado(totalVendas ? soma('faturamento') / totalVendas : 0, 'moeda')),
+        primeiro('Dias com vendas', valorFormatado(diasComVenda, 'numero')),
+      ]
+    }
+    case 'produtos': {
+      const destaque = [...linhas].sort((a, b) => numero(b.unidades_vendidas) - numero(a.unidades_vendidas))[0]
+      return [
+        primeiro('Produtos vendidos', valorFormatado(linhas.length, 'numero')),
+        primeiro('Unidades comercializadas', valorFormatado(soma('unidades_vendidas'), 'numero')),
+        primeiro('Faturamento', valorFormatado(soma('faturamento'), 'moeda')),
+        primeiro('Mais vendido', destaque ? String(destaque.produto) : '—'),
+      ]
+    }
+    case 'categorias': {
+      const destaque = [...linhas].sort((a, b) => numero(b.faturamento) - numero(a.faturamento))[0]
+      return [
+        primeiro('Categorias com vendas', valorFormatado(linhas.length, 'numero')),
+        primeiro('Unidades comercializadas', valorFormatado(soma('unidades_vendidas'), 'numero')),
+        primeiro('Faturamento', valorFormatado(soma('faturamento'), 'moeda')),
+        primeiro('Categoria líder', destaque ? String(destaque.categoria) : '—'),
+      ]
+    }
+    case 'vendedores': {
+      const destaque = [...linhas].sort((a, b) => numero(b.faturamento) - numero(a.faturamento))[0]
+      return [
+        primeiro('Vendedores ativos', valorFormatado(linhas.length, 'numero')),
+        primeiro('Vendas realizadas', valorFormatado(soma('vendas'), 'numero')),
+        primeiro('Faturamento', valorFormatado(soma('faturamento'), 'moeda')),
+        primeiro('Destaque em faturamento', destaque ? String(destaque.vendedor) : '—'),
+      ]
+    }
+    case 'clientes': {
+      const destaque = [...linhas].sort((a, b) => numero(b.faturamento) - numero(a.faturamento))[0]
+      return [
+        primeiro('Clientes compradores', valorFormatado(linhas.length, 'numero')),
+        primeiro('Compras realizadas', valorFormatado(soma('compras'), 'numero')),
+        primeiro('Faturamento', valorFormatado(soma('faturamento'), 'moeda')),
+        primeiro('Maior cliente', destaque ? String(destaque.cliente) : '—'),
+      ]
+    }
+    case 'estoque': {
+      const abaixoDoMinimo = linhas.filter((linha) => linha.situacao === 'Abaixo do mínimo').length
+      return [
+        primeiro('Produtos cadastrados', valorFormatado(linhas.length, 'numero')),
+        primeiro('Unidades em estoque', valorFormatado(soma('quantidade'), 'numero')),
+        primeiro('Custo total do estoque', valorFormatado(soma('custo_em_estoque'), 'moeda')),
+        primeiro('Abaixo do mínimo', valorFormatado(abaixoDoMinimo, 'numero')),
+      ]
+    }
+  }
+}
+
+function dadosGrafico(relatorio: DefinicaoRelatorio, linhas: LinhaRelatorio[]) {
+  if (relatorio.grafico.tipo === 'diario') {
+    const agregados = new Map<string, number>()
+    for (const linha of linhas) {
+      const data = String(relatorio.tipo === 'financeiro' ? linha.dia : linha.data).slice(0, 10)
+      if (!data || data === 'undefined') continue
+      agregados.set(data, (agregados.get(data) ?? 0) + numero(linha[relatorio.grafico.chave]))
+    }
+    return [...agregados.entries()]
+      .sort(([dataA], [dataB]) => dataA.localeCompare(dataB))
+      .map(([rotulo, valor]) => ({ rotulo: valorFormatado(rotulo, 'data'), titulo: rotulo, valor }))
+  }
+
+  return linhas
+    .map((linha) => {
+      const rotulo = String(linha[relatorio.grafico.rotulo === 'Produto' ? 'produto' : relatorio.grafico.rotulo.toLowerCase()] ?? '')
+      return {
+        rotulo: rotulo || 'Sem nome',
+        titulo: rotulo || 'Sem nome',
+        valor: numero(linha[relatorio.grafico.chave]),
+      }
+    })
+    .sort((a, b) => b.valor - a.valor)
+    .slice(0, 8)
 }
 
 function csvSeguro(valor: string) {
@@ -283,6 +402,11 @@ function ReportsPage() {
     setFim(valor)
   }
 
+  const resumo = relatorioSelecionado ? resumoRelatorio(relatorioSelecionado.tipo, linhas) : []
+  const grafico = relatorioSelecionado ? dadosGrafico(relatorioSelecionado, linhas) : []
+  const maximoGrafico = Math.max(...grafico.map((item) => item.valor), 0)
+  const larguraGraficoDiario = Math.max(100, grafico.length * 28)
+
   if (!relatorioSelecionado) {
     return (
       <div className="reports-page">
@@ -367,32 +491,104 @@ function ReportsPage() {
           <strong>Nenhum dado encontrado</strong>
           <p>Não há registros para exibir com o período selecionado.</p>
         </div>
-      ) : (
-        <section className="reports-results">
-          <div className="reports-results-heading">
-            <strong>{linhas.length.toLocaleString('pt-BR')}</strong>
-            <span>{linhas.length === 1 ? 'registro' : 'registros'}</span>
-          </div>
-          <div className="reports-table-wrap">
-            <table className="reports-table">
-              <thead>
-                <tr>
-                  {relatorioSelecionado.colunas.map((coluna) => <th key={coluna.chave}>{coluna.rotulo}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {linhas.map((linha, indice) => (
-                  <tr key={`${String(linha.id_venda ?? linha.produto ?? linha.cliente ?? linha.vendedor ?? linha.dia ?? linha.categoria ?? indice)}-${indice}`}>
-                    {relatorioSelecionado.colunas.map((coluna) => (
-                      <td key={coluna.chave}>{valorFormatado(linha[coluna.chave], coluna.formato)}</td>
-                    ))}
+      ) : !carregando && linhas.length > 0 ? (
+        <>
+          <section className="reports-summary" aria-label="Resumo do relatório">
+            {resumo.map((item) => (
+              <article className="reports-summary-card" key={item.rotulo}>
+                <span>{item.rotulo}</span>
+                <strong title={item.valor}>{item.valor}</strong>
+              </article>
+            ))}
+          </section>
+
+          {grafico.length > 0 && (
+            <section className="reports-chart-panel" aria-label={relatorioSelecionado.grafico.titulo}>
+              <header className="reports-chart-heading">
+                <div>
+                  <span>Análise visual</span>
+                  <h2>{relatorioSelecionado.grafico.titulo}</h2>
+                </div>
+                <span className="reports-chart-unit">{relatorioSelecionado.grafico.formato === 'moeda' ? 'Valores em R$' : 'Quantidade'}</span>
+              </header>
+              {relatorioSelecionado.grafico.tipo === 'diario' ? (
+                <div className="reports-daily-chart-scroll">
+                  <div
+                    className="reports-daily-chart"
+                    role="img"
+                    aria-label={`${relatorioSelecionado.grafico.titulo}: ${grafico.length} dias`}
+                    style={{ width: grafico.length > 16 ? `${larguraGraficoDiario}px` : '100%' }}
+                  >
+                    {grafico.map((item) => {
+                      const altura = maximoGrafico > 0 && item.valor > 0
+                        ? Math.max((item.valor / maximoGrafico) * 100, 3)
+                        : 0
+                      const dia = new Date(`${item.titulo}T12:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+                      return (
+                        <div className="reports-daily-column" key={item.titulo}>
+                          <div className="reports-daily-track">
+                            {altura > 0 && (
+                              <span
+                                className="reports-daily-bar"
+                                style={{ height: `${altura}%` }}
+                                title={`${dia}: ${valorFormatado(item.valor, relatorioSelecionado.grafico.formato)}`}
+                              />
+                            )}
+                          </div>
+                          <span>{dia.slice(0, 2)}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="reports-ranking-chart" role="list">
+                  {grafico.map((item, indice) => (
+                    <div className="reports-ranking-row" key={`${item.rotulo}-${indice}`} role="listitem">
+                      <span className="reports-ranking-label" title={item.rotulo}>{item.rotulo}</span>
+                      <div className="reports-ranking-track">
+                        <span style={{ width: `${maximoGrafico > 0 ? (item.valor / maximoGrafico) * 100 : 0}%` }} />
+                      </div>
+                      <strong>{valorFormatado(item.valor, relatorioSelecionado.grafico.formato)}</strong>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {relatorioSelecionado.grafico.tipo === 'ranking' && linhas.length > grafico.length && (
+                <p className="reports-chart-note">Exibindo os {grafico.length} primeiros de {linhas.length} registros. A tabela abaixo contém o relatório completo.</p>
+              )}
+            </section>
+          )}
+
+          <section className="reports-results">
+            <div className="reports-results-heading">
+              <div>
+                <strong>{linhas.length.toLocaleString('pt-BR')}</strong>
+                <span>{linhas.length === 1 ? 'registro' : 'registros'}</span>
+              </div>
+              <small>Dados completos do relatório</small>
+            </div>
+            <div className="reports-table-wrap">
+              <table className="reports-table">
+                <thead>
+                  <tr>
+                    {relatorioSelecionado.colunas.map((coluna) => <th key={coluna.chave}>{coluna.rotulo}</th>)}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
+                </thead>
+                <tbody>
+                  {linhas.map((linha, indice) => (
+                    <tr key={`${String(linha.id_venda ?? linha.produto ?? linha.cliente ?? linha.vendedor ?? linha.dia ?? linha.categoria ?? indice)}-${indice}`}>
+                      {relatorioSelecionado.colunas.map((coluna) => (
+                        <td key={coluna.chave}>{valorFormatado(linha[coluna.chave], coluna.formato)}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </>
+      ) : null}
     </div>
   )
 }
