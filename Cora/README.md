@@ -15,6 +15,14 @@ do servico. Para login Google, configure tambem `GOOGLE_CLIENT_ID` e
 autorizada no Google. A migration 009, necessaria para registrar o criador da
 conta, e aplicada automaticamente antes de o servidor aceitar requisicoes.
 
+## Relatórios
+
+Na opção **Relatórios** do menu lateral, cada relatório pode ser consultado na
+tela e exportado em CSV ou PDF. Os relatórios de vendas, financeiro, produtos,
+categorias, vendedores e clientes aceitam período inicial e final. O relatório
+de estoque mostra a posição atual, incluindo itens abaixo do mínimo e valores
+estimados pelo custo e pelo preço de venda.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

@@ -9,6 +9,7 @@ import CategoriesPage from './pages/CategoriesPage'
 import CustomersPage from './pages/CustomersPage'
 import SalesPage from './pages/SalesPage'
 import DashboardPage from './pages/DashboardPage'
+import ReportsPage from './pages/ReportsPage'
 import PlanSelectionPage from './pages/PlanSelectionPage'
 import AppLoading from './components/AppLoading'
 
@@ -60,6 +61,7 @@ function AppContent() {
         <Route path="categorias" element={<CategoriesPage />} />
         <Route path="clientes" element={<CustomersPage />} />
         <Route path="vendas" element={<SalesPage />} />
+        <Route path="relatorios" element={<ReportsPage />} />
       </Route>
 
       <Route

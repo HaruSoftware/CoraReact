@@ -5,6 +5,7 @@ import './Layout.css'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   FiGrid,
+  FiFileText,
   FiLogOut,
   FiMenu,
   FiPackage,
@@ -34,7 +35,9 @@ function Layout() {
       ? 'Vendas'
     : location.pathname === '/settings'
       ? 'Configurações'
-      : 'Dashboard'
+    : location.pathname === '/relatorios'
+    ? 'Relatórios'
+    : 'Dashboard'
 
   function navegarPara(rota: string) {
     navigate(rota)
@@ -101,6 +104,11 @@ function Layout() {
           <button className={`nav-item ${location.pathname === '/vendas' ? 'active' : ''}`} onClick={() => navegarPara('/vendas')}>
             <span className="nav-icon" aria-hidden="true"><FiShoppingCart /></span>
             Vendas
+          </button>
+
+          <button className={`nav-item ${location.pathname === '/relatorios' ? 'active' : ''}`} onClick={() => navegarPara('/relatorios')}>
+            <span className="nav-icon" aria-hidden="true"><FiFileText /></span>
+            Relatórios
           </button>
 
           <button
