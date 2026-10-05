@@ -7,6 +7,7 @@ import usuariosRouter from './routes/usuarios.js'
 import produtosRouter from './routes/produtos.js'
 import clientesRouter from './routes/clientes.js'
 import vendasRouter from './routes/vendas.js'
+import dashboardRouter from './routes/dashboard.js'
 import itensVendaRouter from './routes/itensVenda.js'
 import authRouter from './routes/auth.js'
 import { autenticar, type AuthRequest } from './middleware/auth.js'  
@@ -41,6 +42,7 @@ app.use('/api/usuarios', usuariosRouter)
 app.use('/api/produtos', produtosRouter)
 app.use('/api/clientes', clientesRouter)
 app.use('/api/vendas', vendasRouter)
+app.use('/api/dashboard', dashboardRouter)
 app.use('/api/itens-venda', itensVendaRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/auth', googleAuthRouter)

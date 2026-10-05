@@ -8,6 +8,7 @@ import ProductsPage from './pages/ProductsPage'
 import CategoriesPage from './pages/CategoriesPage'
 import CustomersPage from './pages/CustomersPage'
 import SalesPage from './pages/SalesPage'
+import DashboardPage from './pages/DashboardPage'
 import PlanSelectionPage from './pages/PlanSelectionPage'
 import AppLoading from './components/AppLoading'
 
@@ -53,6 +54,7 @@ function AppContent() {
             usuario.tem_assinatura_ativa ? <Layout /> : <Navigate to="/escolher-plano" replace />
         }
       >
+        <Route index element={<DashboardPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="produtos" element={<ProductsPage />} />
         <Route path="categorias" element={<CategoriesPage />} />

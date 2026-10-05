@@ -1,13 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContextValue'
 import { useToast } from '../contexts/ToastContextValue'
-import { api } from '../services/api'
 import './Layout.css'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
-  FiBarChart2,
-  FiClock,
-  FiDollarSign,
   FiGrid,
   FiLogOut,
   FiMenu,
@@ -28,8 +24,6 @@ function Layout() {
   const [modalLogoutAberto, setModalLogoutAberto] = useState(false)
   const [menuMobileAberto, setMenuMobileAberto] = useState(false)
   const [saindo, setSaindo] = useState(false)
-  const [quantidadeProdutos, setQuantidadeProdutos] = useState<number | null>(null)
-  const [quantidadeClientes, setQuantidadeClientes] = useState<number | null>(null)
   const paginaAtual = location.pathname === '/produtos'
     ? 'Produtos'
     : location.pathname === '/categorias'
@@ -46,25 +40,6 @@ function Layout() {
     navigate(rota)
     setMenuMobileAberto(false)
   }
-
-  useEffect(() => {
-    async function carregarQuantidadeProdutos() {
-      try {
-        const [produtos, clientes] = await Promise.all([
-          api('/produtos'),
-          api('/clientes'),
-        ])
-        setQuantidadeProdutos(Array.isArray(produtos) ? produtos.length : 0)
-        setQuantidadeClientes(Array.isArray(clientes) ? clientes.length : 0)
-      } catch (error) {
-        console.error('Erro ao carregar quantidade de produtos:', error)
-        setQuantidadeProdutos(0)
-        setQuantidadeClientes(0)
-      }
-    }
-
-    carregarQuantidadeProdutos()
-  }, [location.pathname])
 
   async function handleConfirmarLogout() {
     try {
@@ -213,184 +188,9 @@ function Layout() {
 
 
         {/* CONTEÚDO */}
-        {location.pathname === '/' ? (
-        <main className="dashboard">
-
-          <section className="welcome-section">
-
-            <div>
-              <span className="welcome-label">
-                Visão geral
-              </span>
-
-              <h1>
-                Olá, {usuario?.nome}!
-              </h1>
-
-              <p>
-                Acompanhe o desempenho do seu negócio
-                através do painel.
-              </p>
-            </div>
-
-          </section>
-
-
-          {/* CARDS */}
-          <section className="stats-grid">
-
-            <article className="stat-card">
-
-              <div className="stat-icon" aria-hidden="true"><FiPackage /></div>
-
-              <div>
-                <span>
-                  Produtos
-                </span>
-
-                <strong>
-                  {quantidadeProdutos ?? '...'}
-                </strong>
-              </div>
-
-            </article>
-
-
-            <article className="stat-card">
-
-              <div className="stat-icon" aria-hidden="true"><FiUsers /></div>
-
-              <div>
-                <span>
-                  Clientes
-                </span>
-
-                <strong>
-                  {quantidadeClientes ?? '...'}
-                </strong>
-              </div>
-
-            </article>
-
-
-            <article className="stat-card">
-
-              <div className="stat-icon" aria-hidden="true"><FiShoppingCart /></div>
-
-              <div>
-                <span>
-                  Vendas
-                </span>
-
-                <strong>
-                  0
-                </strong>
-              </div>
-
-            </article>
-
-
-            <article className="stat-card">
-
-              <div className="stat-icon" aria-hidden="true"><FiDollarSign /></div>
-
-              <div>
-                <span>
-                  Faturamento
-                </span>
-
-                <strong>
-                  R$ 0,00
-                </strong>
-              </div>
-
-            </article>
-
-          </section>
-
-
-          {/* CONTEÚDO INFERIOR */}
-          <section className="dashboard-grid">
-
-            <article className="dashboard-card sales-card">
-
-              <div className="card-header">
-
-                <div>
-                  <span>
-                    Desempenho
-                  </span>
-
-                  <h3>
-                    Vendas recentes
-                  </h3>
-                </div>
-
-                <span className="card-period">
-                  Este mês
-                </span>
-
-              </div>
-
-              <div className="empty-state">
-
-                <div className="empty-icon" aria-hidden="true"><FiBarChart2 /></div>
-
-                <strong>
-                  Nenhuma venda registrada
-                </strong>
-
-                <p>
-                  As vendas realizadas aparecerão
-                  aqui.
-                </p>
-
-              </div>
-
-            </article>
-
-
-            <article className="dashboard-card activity-card">
-
-              <div className="card-header">
-
-                <div>
-                  <span>
-                    Sistema
-                  </span>
-
-                  <h3>
-                    Atividade recente
-                  </h3>
-                </div>
-
-              </div>
-
-              <div className="empty-state">
-
-                <div className="empty-icon" aria-hidden="true"><FiClock /></div>
-
-                <strong>
-                  Nenhuma atividade
-                </strong>
-
-                <p>
-                  Suas atividades recentes aparecerão
-                  aqui.
-                </p>
-
-              </div>
-
-            </article>
-
-          </section>
-
+        <main className="page-content">
+          <Outlet />
         </main>
-        ) : (
-          <div className="page-content">
-            <Outlet />
-          </div>
-        )}
 
       </div>
 
