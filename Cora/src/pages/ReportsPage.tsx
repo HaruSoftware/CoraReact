@@ -249,6 +249,11 @@ function resumoRelatorio(tipo: TipoRelatorio, linhas: LinhaRelatorio[]) {
 }
 
 function dadosGrafico(relatorio: DefinicaoRelatorio, linhas: LinhaRelatorio[]) {
+  const dados = todosDadosGrafico(relatorio, linhas)
+  return relatorio.grafico.tipo === 'ranking' ? dados.slice(0, 8) : dados
+}
+
+function todosDadosGrafico(relatorio: DefinicaoRelatorio, linhas: LinhaRelatorio[]) {
   if (relatorio.grafico.tipo === 'diario') {
     const agregados = new Map<string, number>()
     for (const linha of linhas) {
@@ -271,7 +276,6 @@ function dadosGrafico(relatorio: DefinicaoRelatorio, linhas: LinhaRelatorio[]) {
       }
     })
     .sort((a, b) => b.valor - a.valor)
-    .slice(0, 8)
 }
 
 function csvSeguro(valor: string) {
@@ -288,6 +292,245 @@ function baixarArquivo(conteudo: BlobPart, tipo: string, nome: string) {
   link.click()
   link.remove()
   URL.revokeObjectURL(url)
+}
+
+const CORES_GRAFICO_PDF = [
+  [8, 127, 104],
+  [54, 153, 131],
+  [103, 177, 159],
+  [157, 204, 189],
+  [207, 225, 216],
+  [224, 231, 228],
+]
+
+function valorCompacto(valor: number, formato: 'numero' | 'moeda') {
+  const compacto = new Intl.NumberFormat('pt-BR', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(valor)
+  return formato === 'moeda' ? `R$ ${compacto}` : compacto
+}
+
+function limitarRotulo(valor: string, tamanho: number) {
+  return valor.length > tamanho ? `${valor.slice(0, tamanho - 1)}…` : valor
+}
+
+function agruparPontosDiarios(pontos: Array<{ rotulo: string; titulo: string; valor: number }>) {
+  if (pontos.length <= 12) return pontos
+  const quantidadeGrupos = 12
+  return Array.from({ length: quantidadeGrupos }, (_, indice) => {
+    const inicio = Math.floor(indice * pontos.length / quantidadeGrupos)
+    const fim = Math.floor((indice + 1) * pontos.length / quantidadeGrupos)
+    const grupo = pontos.slice(inicio, fim)
+    const primeiroDia = grupo[0].titulo.slice(8, 10)
+    const ultimoDia = grupo.at(-1)!.titulo.slice(8, 10)
+    return {
+      rotulo: primeiroDia === ultimoDia ? primeiroDia : `${primeiroDia}-${ultimoDia}`,
+      titulo: `${grupo[0].titulo} a ${grupo.at(-1)!.titulo}`,
+      valor: grupo.reduce((soma, ponto) => soma + ponto.valor, 0),
+    }
+  })
+}
+
+function desenharPizzaPdf(
+  documento: import('jspdf').jsPDF,
+  pontos: Array<{ rotulo: string; valor: number }>,
+  centroX: number,
+  centroY: number,
+  raio: number
+) {
+  const positivos = pontos.filter((ponto) => ponto.valor > 0)
+  const total = positivos.reduce((soma, ponto) => soma + ponto.valor, 0)
+
+  if (total <= 0) {
+    documento.setFillColor(231, 237, 234)
+    documento.circle(centroX, centroY, raio, 'F')
+    return
+  }
+
+  let anguloAtual = -Math.PI / 2
+  positivos.forEach((ponto, indice) => {
+    const anguloFinal = anguloAtual + (ponto.valor / total) * Math.PI * 2
+    const cor = CORES_GRAFICO_PDF[indice % CORES_GRAFICO_PDF.length]
+    documento.setFillColor(cor[0], cor[1], cor[2])
+    const passos = Math.max(1, Math.ceil((anguloFinal - anguloAtual) / (Math.PI / 30)))
+    for (let passo = 0; passo < passos; passo += 1) {
+      const inicio = anguloAtual + ((anguloFinal - anguloAtual) * passo) / passos
+      const fim = anguloAtual + ((anguloFinal - anguloAtual) * (passo + 1)) / passos
+      documento.triangle(
+        centroX,
+        centroY,
+        centroX + Math.cos(inicio) * raio,
+        centroY + Math.sin(inicio) * raio,
+        centroX + Math.cos(fim) * raio,
+        centroY + Math.sin(fim) * raio,
+        'F'
+      )
+    }
+    anguloAtual = anguloFinal
+  })
+
+  documento.setFillColor(255, 255, 255)
+  documento.circle(centroX, centroY, raio * 0.56, 'F')
+  documento.setTextColor(48, 61, 56)
+  documento.setFont('helvetica', 'bold')
+  documento.setFontSize(8)
+  documento.text(valorCompacto(total, 'moeda'), centroX, centroY + 1, { align: 'center', maxWidth: raio * 0.9 })
+}
+
+function desenharGraficosPdf(
+  documento: import('jspdf').jsPDF,
+  relatorio: DefinicaoRelatorio,
+  linhas: LinhaRelatorio[],
+  periodo: string
+) {
+  const paginaLargura = documento.internal.pageSize.getWidth()
+  const margem = 14
+  const larguraUtil = paginaLargura - margem * 2
+  const pontosCompletos = todosDadosGrafico(relatorio, linhas).filter((ponto) => ponto.valor > 0)
+  const pontosBarras = relatorio.grafico.tipo === 'diario'
+    ? agruparPontosDiarios(pontosCompletos)
+    : pontosCompletos.slice(0, 8)
+  const totalGrafico = pontosCompletos.reduce((soma, ponto) => soma + ponto.valor, 0)
+  const fatias = pontosCompletos.slice(0, 5)
+  const outros = pontosCompletos.slice(5).reduce((soma, ponto) => soma + ponto.valor, 0)
+  if (outros > 0) fatias.push({ rotulo: 'Demais', valor: outros, titulo: 'Demais' })
+
+  documento.setFillColor(8, 127, 104)
+  documento.roundedRect(margem, 10, 3, 15, 1, 1, 'F')
+  documento.setTextColor(23, 35, 44)
+  documento.setFont('helvetica', 'bold')
+  documento.setFontSize(16)
+  documento.text(relatorio.titulo, margem + 7, 17)
+  documento.setFont('helvetica', 'normal')
+  documento.setTextColor(104, 116, 125)
+  documento.setFontSize(8)
+  documento.text(`Período: ${periodo}  |  Gerado em ${new Date().toLocaleString('pt-BR')}`, margem + 7, 23)
+
+  const indicadores = resumoRelatorio(relatorio.tipo, linhas)
+  const espacamento = 4
+  const larguraCartao = (larguraUtil - espacamento * (indicadores.length - 1)) / indicadores.length
+  const cartaoY = 30
+  indicadores.forEach((indicador, indice) => {
+    const x = margem + indice * (larguraCartao + espacamento)
+    documento.setFillColor(247, 249, 248)
+    documento.setDrawColor(229, 233, 232)
+    documento.roundedRect(x, cartaoY, larguraCartao, 22, 2, 2, 'FD')
+    documento.setFont('helvetica', 'normal')
+    documento.setTextColor(104, 116, 125)
+    documento.setFontSize(7)
+    documento.text(limitarRotulo(indicador.rotulo, 32), x + 3, cartaoY + 7)
+    documento.setFont('helvetica', 'bold')
+    documento.setTextColor(23, 35, 44)
+    documento.setFontSize(9)
+    documento.text(documento.splitTextToSize(indicador.valor, larguraCartao - 6).slice(0, 2), x + 3, cartaoY + 13)
+  })
+
+  const painelY = 58
+  const painelAltura = 116
+  const gap = 5
+  const graficoLargura = larguraUtil * 0.66
+  const pizzaX = margem + graficoLargura + gap
+  const pizzaLargura = larguraUtil - graficoLargura - gap
+
+  documento.setFillColor(255, 255, 255)
+  documento.setDrawColor(229, 233, 232)
+  documento.roundedRect(margem, painelY, graficoLargura, painelAltura, 2, 2, 'FD')
+  documento.roundedRect(pizzaX, painelY, pizzaLargura, painelAltura, 2, 2, 'FD')
+  documento.setTextColor(23, 35, 44)
+  documento.setFont('helvetica', 'bold')
+  documento.setFontSize(9)
+  documento.text(relatorio.grafico.titulo, margem + 5, painelY + 8)
+  documento.text('Participação no total', pizzaX + 5, painelY + 8)
+
+  if (pontosBarras.length === 0) {
+    documento.setFont('helvetica', 'normal')
+    documento.setTextColor(133, 144, 151)
+    documento.setFontSize(9)
+    documento.text('Sem valores para representar neste período.', margem + graficoLargura / 2, painelY + painelAltura / 2, { align: 'center' })
+  } else if (relatorio.grafico.tipo === 'diario') {
+    const areaX = margem + 8
+    const areaY = painelY + 17
+    const areaLargura = graficoLargura - 16
+    const areaAltura = 79
+    const maior = Math.max(...pontosBarras.map((ponto) => ponto.valor), 1)
+    const colunaLargura = areaLargura / pontosBarras.length
+    documento.setDrawColor(229, 235, 232)
+    documento.line(areaX, areaY + areaAltura, areaX + areaLargura, areaY + areaAltura)
+    pontosBarras.forEach((ponto, indice) => {
+      const largura = Math.min(10, colunaLargura * 0.62)
+      const altura = Math.max(1, (ponto.valor / maior) * (areaAltura - 5))
+      const x = areaX + indice * colunaLargura + (colunaLargura - largura) / 2
+      const y = areaY + areaAltura - altura
+      documento.setFillColor(8, 127, 104)
+      documento.roundedRect(x, y, largura, altura, 1, 1, 'F')
+      documento.setFont('helvetica', 'normal')
+      documento.setTextColor(104, 116, 125)
+      documento.setFontSize(6)
+      documento.text(limitarRotulo(ponto.rotulo, 8), x + largura / 2, areaY + areaAltura + 7, { align: 'center' })
+    })
+    documento.setFontSize(7)
+    documento.setTextColor(104, 116, 125)
+    documento.text(`Total: ${valorFormatado(totalGrafico, relatorio.grafico.formato)}`, margem + 5, painelY + painelAltura - 5)
+  } else {
+    const maior = Math.max(...pontosBarras.map((ponto) => ponto.valor), 1)
+    const yInicial = painelY + 19
+    const alturaLinha = Math.min(11.3, 83 / pontosBarras.length)
+    pontosBarras.forEach((ponto, indice) => {
+      const y = yInicial + indice * alturaLinha
+      const label = limitarRotulo(ponto.rotulo, 22)
+      documento.setFont('helvetica', 'normal')
+      documento.setTextColor(70, 84, 79)
+      documento.setFontSize(7)
+      documento.text(label, margem + 5, y + 4, { maxWidth: 43 })
+      const barraX = margem + 51
+      const barraLargura = graficoLargura - 78
+      documento.setFillColor(237, 241, 239)
+      documento.roundedRect(barraX, y, barraLargura, 5, 1, 1, 'F')
+      documento.setFillColor(8, 127, 104)
+      documento.roundedRect(barraX, y, Math.max(1, barraLargura * ponto.valor / maior), 5, 1, 1, 'F')
+      documento.setTextColor(51, 67, 74)
+      documento.setFont('helvetica', 'bold')
+      documento.setFontSize(6.5)
+      documento.text(valorCompacto(ponto.valor, relatorio.grafico.formato), margem + graficoLargura - 4, y + 4, { align: 'right' })
+    })
+    documento.setFont('helvetica', 'normal')
+    documento.setTextColor(104, 116, 125)
+    documento.setFontSize(7)
+    documento.text(`Exibindo ${pontosBarras.length} de ${pontosCompletos.length} registros`, margem + 5, painelY + painelAltura - 5)
+  }
+
+  const centroX = pizzaX + 27
+  const centroY = painelY + 59
+  const raio = 22
+  desenharPizzaPdf(documento, fatias, centroX, centroY, raio)
+  const legendaX = pizzaX + 52
+  const legendaY = painelY + 26
+  const totalFatias = fatias.reduce((soma, fatia) => soma + fatia.valor, 0)
+  fatias.forEach((fatia, indice) => {
+    const y = legendaY + indice * 12
+    const cor = CORES_GRAFICO_PDF[indice % CORES_GRAFICO_PDF.length]
+    documento.setFillColor(cor[0], cor[1], cor[2])
+    documento.circle(legendaX, y - 1, 1.5, 'F')
+    documento.setFont('helvetica', 'normal')
+    documento.setTextColor(70, 84, 79)
+    documento.setFontSize(6.5)
+    documento.text(limitarRotulo(fatia.rotulo, 16), legendaX + 3, y, { maxWidth: pizzaX + pizzaLargura - legendaX - 6 })
+    const percentual = totalFatias ? Math.round((fatia.valor / totalFatias) * 100) : 0
+    documento.setFont('helvetica', 'bold')
+    documento.text(`${percentual}%`, pizzaX + pizzaLargura - 4, y, { align: 'right' })
+  })
+
+  documento.setFont('helvetica', 'normal')
+  documento.setTextColor(133, 144, 151)
+  documento.setFontSize(7)
+  documento.text(
+    relatorio.grafico.tipo === 'diario'
+      ? 'Barras: total por dia (agrupado quando necessário). Pizza: participação dos dias de maior valor.'
+      : 'Barras: principais registros por valor. Pizza: participação dos cinco primeiros e demais registros.',
+    margem,
+    painelY + painelAltura + 8
+  )
 }
 
 function ReportsPage() {
@@ -334,14 +577,23 @@ function ReportsPage() {
       const periodo = relatorioSelecionado.usaPeriodo === false
         ? 'Posição atual'
         : `${valorFormatado(inicio, 'data')} a ${valorFormatado(fim, 'data')}`
+      desenharGraficosPdf(documento, relatorioSelecionado, linhas, periodo)
+      documento.setFont('helvetica', 'normal')
+      documento.setTextColor(133, 144, 151)
+      documento.setFontSize(7)
+      documento.text('Resumo visual', 14, documento.internal.pageSize.getHeight() - 7)
+
+      documento.addPage()
       documento.setFont('helvetica', 'bold')
-      documento.setFontSize(16)
+      documento.setTextColor(23, 35, 44)
+      documento.setFontSize(14)
       documento.text(relatorioSelecionado.titulo, 14, 16)
       documento.setFont('helvetica', 'normal')
-      documento.setFontSize(9)
-      documento.text(`Período: ${periodo} · Gerado em ${new Date().toLocaleString('pt-BR')}`, 14, 23)
+      documento.setTextColor(104, 116, 125)
+      documento.setFontSize(8)
+      documento.text(`Dados completos · Período: ${periodo} · ${linhas.length.toLocaleString('pt-BR')} registros`, 14, 22)
       autoTable(documento, {
-        startY: 29,
+        startY: 27,
         head: [relatorioSelecionado.colunas.map((coluna) => coluna.rotulo)],
         body: linhas.map((linha) => relatorioSelecionado.colunas.map((coluna) =>
           valorFormatado(linha[coluna.chave], coluna.formato)
@@ -351,6 +603,7 @@ function ReportsPage() {
         headStyles: { fillColor: [8, 127, 104], textColor: [255, 255, 255], fontStyle: 'bold' },
         didDrawPage: () => {
           const pagina = documento.getNumberOfPages()
+          documento.setFont('helvetica', 'normal')
           documento.setFontSize(8)
           documento.setTextColor(120)
           documento.text(`Página ${pagina}`, documento.internal.pageSize.getWidth() - 14, documento.internal.pageSize.getHeight() - 7, { align: 'right' })
