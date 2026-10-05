@@ -536,6 +536,13 @@
   font-weight: 600;
 }
 
+.products-form-grid .products-markup-help {
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
 .products-form-grid input,
 .products-form-grid select,
 .products-form-grid textarea {

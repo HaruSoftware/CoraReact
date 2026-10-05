@@ -94,16 +94,16 @@ function calcularMarkup(custo: string, preco: string) {
   const custoNumerico = converterValor(custo)
   const precoNumerico = converterValor(preco)
 
-  if (custoNumerico === null || precoNumerico === null || precoNumerico <= 0) return ''
-  return formatarValorInput((custoNumerico / precoNumerico) * 100)
+  if (custoNumerico === null || custoNumerico <= 0 || precoNumerico === null || precoNumerico < 0) return ''
+  return formatarValorInput(((precoNumerico - custoNumerico) / custoNumerico) * 100)
 }
 
 function calcularPreco(custo: string, markup: string) {
   const custoNumerico = converterValor(custo)
   const markupNumerico = converterValor(markup)
 
-  if (custoNumerico === null || markupNumerico === null || markupNumerico <= 0) return ''
-  return formatarValorInput((custoNumerico * 100) / markupNumerico)
+  if (custoNumerico === null || custoNumerico < 0 || markupNumerico === null || markupNumerico < -100) return ''
+  return formatarValorInput(custoNumerico * (1 + markupNumerico / 100))
 }
 
 function formatarMarkup(custo: number | string, preco: number | string) {
@@ -518,6 +518,7 @@ function ProductsPage() {
               <label>
                 Markup (%)
                 <input type="text" inputMode="decimal" value={formulario.markup} onChange={(event) => atualizarMarkup(event.target.value)} placeholder="Ex.: 50" />
+                <small className="products-markup-help">Percentual aplicado sobre o custo. Ex.: custo de R$ 1,00 + markup de 60% = preço de R$ 1,60.</small>
               </label>
               <label>
                 Preço de venda
