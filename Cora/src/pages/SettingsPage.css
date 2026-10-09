@@ -976,4 +976,32 @@
   .unit-create-form .primary-button {
     width: 100%;
   }
+
+  .user-item {
+    align-items: flex-start;
+  }
+
+  .user-item-left {
+    flex: 1;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .user-info {
+    flex: 1;
+  }
+
+  .user-name-wrapper {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .user-name-wrapper strong {
+    overflow-wrap: anywhere;
+  }
+
+  .user-info > span {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
 }
