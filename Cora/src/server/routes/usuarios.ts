@@ -213,6 +213,22 @@ router.delete('/:id', autenticar, async (req, res) => {
             })
         }
 
+        const vendasAssociadas = await pool.query(
+            `SELECT 1
+             FROM venda
+             WHERE id_usuario = $1
+               AND id_conta = $2
+             LIMIT 1`,
+            [id, id_conta]
+        )
+
+        if (vendasAssociadas.rows.length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: 'Este usuário está vinculado a vendas e não pode ser excluído para preservar o histórico.',
+            })
+        }
+
         const result = await pool.query(
             `DELETE FROM usuario
              WHERE id_usuario = $1
