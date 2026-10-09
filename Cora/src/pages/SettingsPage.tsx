@@ -623,7 +623,7 @@ function SettingsPage() {
                         <div className="user-avatar">
                           {inicial}
                         </div>
-                        <div className="user-info">
+                        <div className="settings-user-info">
                           <div className="user-name-wrapper">
                             <strong>{u.nome}</strong>
                             {u.conta_google && (

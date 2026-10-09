@@ -454,7 +454,7 @@
   flex-shrink: 0;
 }
 
-.user-info {
+.settings-user-info {
   min-width: 0;
   align-items: flex-start;
 }
@@ -521,7 +521,7 @@
   height: 13px;
 }
 
-.user-info span {
+.settings-user-info span {
   display: block;
   font-size: 13px;
   color: #6b7280;
@@ -987,7 +987,7 @@
     gap: 10px;
   }
 
-  .user-info {
+  .settings-user-info {
     flex: 1;
   }
 
@@ -1000,7 +1000,7 @@
     overflow-wrap: anywhere;
   }
 
-  .user-info > span {
+  .settings-user-info > span {
     white-space: normal;
     overflow-wrap: anywhere;
   }
