@@ -551,7 +551,7 @@ function SettingsPage() {
                 </div>
                 <div className="info-row">
                   <span>Fim do período mensal</span>
-                  <strong>{new Date(`${assinatura.data_fim_periodo}T00:00:00`).toLocaleDateString('pt-BR')}</strong>
+                  <strong>{new Date(assinatura.data_fim_periodo).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</strong>
                 </div>
                 <p className="subscription-notice">
                   {assinatura.demonstrativo
