@@ -809,3 +809,34 @@ html[data-theme='dark'] .plan-selection-page {
   --plan-primary: var(--theme-action);
   --plan-primary-dark: var(--theme-action-hover);
 }
+
+html[data-theme='dark'] .logout-modal .logout-icon {
+  background: #4a2524;
+  color: #fca5a5;
+}
+
+html[data-theme='dark'] .logout-modal .modal-header h3 {
+  color: var(--theme-text);
+}
+
+html[data-theme='dark'] .logout-modal .modal-header p,
+html[data-theme='dark'] .logout-modal .modal-body-text {
+  color: var(--theme-muted);
+}
+
+html[data-theme='dark'] .logout-modal .modal-close-button:hover:not(:disabled) {
+  background: var(--theme-hover);
+  color: var(--theme-text);
+}
+
+html[data-theme='dark'] .logout-modal .modal-secondary-button {
+  border-color: var(--theme-border);
+  background: var(--theme-surface-raised);
+  color: var(--theme-text);
+}
+
+html[data-theme='dark'] .logout-modal .modal-secondary-button:hover:not(:disabled) {
+  border-color: #526783;
+  background: var(--theme-hover);
+  color: var(--theme-text);
+}
