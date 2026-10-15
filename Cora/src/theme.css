@@ -1264,6 +1264,21 @@ html[data-theme='dark'] .reports-spinner {
   border-top-color: var(--theme-green-bright);
 }
 
+html[data-theme='dark'] .categories-search {
+  border-color: var(--theme-border);
+  background: var(--theme-surface-raised);
+  color: var(--theme-muted);
+}
+
+html[data-theme='dark'] .categories-search input {
+  background: transparent;
+  color: var(--theme-text);
+}
+
+html[data-theme='dark'] .categories-search input::placeholder {
+  color: #8291a5;
+}
+
 html[data-theme='dark'] .modal-container .primary-button {
   border-color: var(--theme-action);
   background: var(--theme-action);
