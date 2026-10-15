@@ -17,14 +17,12 @@ import { AuthProvider } from './contexts/AuthContext'
 import { useAuth } from './contexts/AuthContextValue'
 import { ToastProvider } from './contexts/ToastContext'
 import { ThemeProvider } from './contexts/ThemeContext'
-import NetworkBackground from './components/NetworkBackground'
 
 function AppContent() {
   const { usuario, carregando } = useAuth()
 
   return (
     <div className="app-shell">
-      <NetworkBackground />
       {carregando ? <AppLoading /> : <Routes>
       <Route
         path="/login"
