@@ -840,3 +840,52 @@ html[data-theme='dark'] .logout-modal .modal-secondary-button:hover:not(:disable
   background: var(--theme-hover);
   color: var(--theme-text);
 }
+
+html[data-theme='dark'] .logout-modal .modal-danger-button {
+  border-color: #b91c1c;
+  background: #b91c1c;
+  color: #ffffff;
+}
+
+html[data-theme='dark'] .logout-modal .modal-danger-button:hover:not(:disabled),
+html[data-theme='dark'] .danger-button.filled:hover:not(:disabled) {
+  border-color: #991b1b;
+  background: #991b1b;
+}
+
+html[data-theme='dark'] .danger-card {
+  border-color: #63363b;
+  background: #2d1e22;
+}
+
+html[data-theme='dark'] .danger-card strong,
+html[data-theme='dark'] .danger-card p {
+  color: #fecaca;
+}
+
+html[data-theme='dark'] .danger-button {
+  border-color: #b91c1c;
+  background: #351b20;
+  color: #fca5a5;
+}
+
+html[data-theme='dark'] .danger-button:hover:not(:disabled),
+html[data-theme='dark'] .danger-button.filled {
+  border-color: #b91c1c;
+  background: #b91c1c;
+  color: #ffffff;
+}
+
+html[data-theme='dark'] .user-action-button {
+  color: var(--theme-muted);
+}
+
+html[data-theme='dark'] .user-action-button:hover:not(:disabled) {
+  background: var(--theme-hover);
+  color: var(--theme-text);
+}
+
+html[data-theme='dark'] .user-action-button.delete:hover:not(:disabled) {
+  background: #4a2524;
+  color: #fca5a5;
+}
