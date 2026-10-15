@@ -3,7 +3,6 @@ import { useAuth } from '../contexts/AuthContextValue'
 import { useToast } from '../contexts/ToastContextValue'
 import './Layout.css'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import NetworkBackground from './NetworkBackground'
 import {
   FiGrid,
   FiFileText,
@@ -62,7 +61,6 @@ function Layout() {
 
   return (
     <div className="layout">
-      <NetworkBackground />
 
       {/* SIDEBAR */}
       {menuMobileAberto && (

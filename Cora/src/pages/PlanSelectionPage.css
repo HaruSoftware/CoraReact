@@ -1,4 +1,6 @@
 .plan-selection-page {
+  position: relative;
+  z-index: 1;
   --plan-primary: #111827;
   --plan-primary-dark: #1f2937;
   --plan-accent: #2563eb;
@@ -9,7 +11,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--plan-paper);
+  background: transparent;
   color: var(--plan-ink);
   box-sizing: border-box;
 }

@@ -1,24 +1,32 @@
-html[data-theme='dark'] body {
-  background: #111a1d;
-  color: #e3ece9;
+.app-shell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+html[data-theme='dark'] body,
+html[data-theme='dark'] .app-shell {
+  background: #000000;
+  color: #ffffff;
 }
 
 html[data-theme='dark'] .layout {
-  color: #e3ece9;
+  color: #ffffff;
 }
 
 html[data-theme='dark'] .sidebar {
-  background: #10191b;
+  background: #000000;
 }
 
 html[data-theme='dark'] .sidebar-footer {
-  border-color: #293638;
+  border-color: #333333;
 }
 
 html[data-theme='dark'] .nav-item:hover,
 html[data-theme='dark'] .nav-item.active,
 html[data-theme='dark'] .settings-button:hover {
-  background: #263635;
+  background: #292929;
 }
 
 html[data-theme='dark'] .topbar,
@@ -43,15 +51,19 @@ html[data-theme='dark'] .sales-detail-modal,
 html[data-theme='dark'] .sales-picker-modal,
 html[data-theme='dark'] .sales-cart-panel,
 html[data-theme='dark'] .modal-container.logout-modal,
-html[data-theme='dark'] .modal-container {
-  border-color: #344447;
-  background-color: #1b282b;
-  color: #e3ece9;
+html[data-theme='dark'] .modal-container,
+html[data-theme='dark'] .login-card,
+html[data-theme='dark'] .register-card,
+html[data-theme='dark'] .plan-selection-topbar,
+html[data-theme='dark'] .plan-selection-layout {
+  border-color: #333333;
+  background-color: #111111;
+  color: #ffffff;
 }
 
 html[data-theme='dark'] .topbar {
-  background: rgba(24, 36, 39, 0.94);
-  border-color: #344447;
+  background: #111111;
+  border-color: #333333;
 }
 
 html[data-theme='dark'] .topbar h2,
@@ -77,8 +89,15 @@ html[data-theme='dark'] .customers-modal h2,
 html[data-theme='dark'] .customer-row-main strong,
 html[data-theme='dark'] .sales-header h1,
 html[data-theme='dark'] .sales-modal-header h2,
-html[data-theme='dark'] .sales-metric > strong {
-  color: #e3ece9;
+html[data-theme='dark'] .sales-metric > strong,
+html[data-theme='dark'] .login-header h1,
+html[data-theme='dark'] .register-header h1,
+html[data-theme='dark'] .register-section h2,
+html[data-theme='dark'] .input-group label,
+html[data-theme='dark'] .plan-selection-brand strong,
+html[data-theme='dark'] .plan-selection-progress strong,
+html[data-theme='dark'] .plan-selection-content-heading h2 {
+  color: #ffffff;
 }
 
 html[data-theme='dark'] .settings-header-label,
@@ -103,8 +122,15 @@ html[data-theme='dark'] .customer-row-main span,
 html[data-theme='dark'] .customer-contact,
 html[data-theme='dark'] .sales-header p,
 html[data-theme='dark'] .sales-metric > span,
-html[data-theme='dark'] .sales-metric small {
-  color: #a6b6b5;
+html[data-theme='dark'] .sales-metric small,
+html[data-theme='dark'] .login-header p,
+html[data-theme='dark'] .login-footer,
+html[data-theme='dark'] .register-header p,
+html[data-theme='dark'] .register-footer,
+html[data-theme='dark'] .plan-selection-brand span,
+html[data-theme='dark'] .plan-selection-progress small,
+html[data-theme='dark'] .plan-selection-content-heading p {
+  color: #b3b3b3;
 }
 
 html[data-theme='dark'] .info-row,
@@ -115,7 +141,7 @@ html[data-theme='dark'] .sales-table th,
 html[data-theme='dark'] .sales-table td,
 html[data-theme='dark'] .reports-table th,
 html[data-theme='dark'] .reports-table td {
-  border-color: #344447;
+  border-color: #333333;
 }
 
 html[data-theme='dark'] .settings-input,
@@ -130,20 +156,24 @@ html[data-theme='dark'] .customers-filters select,
 html[data-theme='dark'] .category-form-label input,
 html[data-theme='dark'] .customer-form-grid input,
 html[data-theme='dark'] .customer-form-grid select,
+html[data-theme='dark'] .login-card input,
+html[data-theme='dark'] .register-card input,
+html[data-theme='dark'] .login-card .google-button,
+html[data-theme='dark'] .register-card .google-button,
 html[data-theme='dark'] .theme-options,
 html[data-theme='dark'] .reports-secondary-button,
 html[data-theme='dark'] .sales-secondary-button,
 html[data-theme='dark'] .logout-button,
 html[data-theme='dark'] .mobile-menu-button {
-  border-color: #45585a;
-  background-color: #172326;
-  color: #e3ece9;
+  border-color: #444444;
+  background-color: #000000;
+  color: #ffffff;
 }
 
 html[data-theme='dark'] .theme-option.active {
-  border-color: #617573;
-  background: #344745;
-  color: #eff8f5;
+  border-color: #666666;
+  background: #333333;
+  color: #ffffff;
 }
 
 html[data-theme='dark'] .section-icon,
@@ -151,9 +181,9 @@ html[data-theme='dark'] .category-icon,
 html[data-theme='dark'] .customer-icon,
 html[data-theme='dark'] .categories-empty-icon,
 html[data-theme='dark'] .customers-empty-icon {
-  border-color: #344447;
-  background: #263638;
-  color: #b5cdc6;
+  border-color: #333333;
+  background: #222222;
+  color: #ffffff;
 }
 
 html[data-theme='dark'] .dashboard-kpi-icon,
@@ -161,13 +191,74 @@ html[data-theme='dark'] .report-card-icon {
   background: #263d39;
 }
 
+html[data-theme='dark'] .login-button,
+html[data-theme='dark'] .register-button,
+html[data-theme='dark'] .products-primary-button,
+html[data-theme='dark'] .categories-primary-button,
+html[data-theme='dark'] .customers-primary-button,
+html[data-theme='dark'] .plan-selection-submit {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: #000000;
+}
+
+html[data-theme='dark'] .login-button:hover:not(:disabled),
+html[data-theme='dark'] .register-button:hover:not(:disabled),
+html[data-theme='dark'] .products-primary-button:hover:not(:disabled),
+html[data-theme='dark'] .categories-primary-button:hover:not(:disabled),
+html[data-theme='dark'] .customers-primary-button:hover:not(:disabled),
+html[data-theme='dark'] .plan-selection-submit:hover:not(:disabled) {
+  border-color: #d9d9d9;
+  background: #d9d9d9;
+}
+
+html[data-theme='dark'] .login-footer button,
+html[data-theme='dark'] .register-footer button {
+  color: #ffffff;
+}
+
+html[data-theme='dark'] .login-error,
+html[data-theme='dark'] .register-error {
+  border-color: #6b1b1b;
+  background: #2b0f0f;
+  color: #fca5a5;
+}
+
+html[data-theme='dark'] .plan-selection-page {
+  --plan-paper: #000000;
+  --plan-ink: #ffffff;
+  --plan-muted: #b3b3b3;
+  --plan-primary: #ffffff;
+  --plan-primary-dark: #e5e5e5;
+}
+
+html[data-theme='dark'] .plan-selection-intro {
+  background: #e5e5e5;
+  color: #000000;
+}
+
+html[data-theme='dark'] .plan-selection-intro p,
+html[data-theme='dark'] .plan-selection-kicker,
+html[data-theme='dark'] .plan-selection-assurance > span {
+  color: #333333;
+}
+
+html[data-theme='dark'] .plan-selection-progress > span {
+  background: #ffffff;
+  color: #000000;
+}
+
+html[data-theme='dark'] .plan-selection-assurance {
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
 html[data-theme='dark'] .category-action-button:hover,
 html[data-theme='dark'] .customer-action-button:hover,
 html[data-theme='dark'] .logout-button:hover,
 html[data-theme='dark'] .sales-secondary-button:hover:not(:disabled),
 html[data-theme='dark'] .reports-secondary-button:hover:not(:disabled) {
-  background: #2a3b3d;
-  color: #eff8f5;
+  background: #292929;
+  color: #ffffff;
 }
 
 html[data-theme='dark'] .dashboard-page,
@@ -188,5 +279,5 @@ html[data-theme='dark'] .subscription-notice {
 
 html[data-theme='dark'] .sales-table tbody tr:hover,
 html[data-theme='dark'] .reports-table tbody tr:hover {
-  background: #243436;
+  background: #222222;
 }
