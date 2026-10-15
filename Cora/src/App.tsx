@@ -16,6 +16,7 @@ import AppLoading from './components/AppLoading'
 import { AuthProvider } from './contexts/AuthContext'
 import { useAuth } from './contexts/AuthContextValue'
 import { ToastProvider } from './contexts/ToastContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 
 function AppContent() {
   const { usuario, carregando } = useAuth()
@@ -76,11 +77,13 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <ToastProvider>
-          <AppContent />
-        </ToastProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <AppContent />
+          </ToastProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   )
 }

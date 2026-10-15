@@ -12,11 +12,15 @@ import {
   FiX,
   FiBox,
   FiMail,
+  FiSun,
+  FiMoon,
+  FiMonitor,
 } from 'react-icons/fi'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api, urlDaApi } from '../services/api'
 import { useAuth } from '../contexts/AuthContextValue'
 import { useToast } from '../contexts/ToastContextValue'
+import { useTheme, type ThemePreference } from '../contexts/ThemeContextValue'
 import './SettingsPage.css'
 
 type Usuario = {
@@ -74,6 +78,7 @@ function SettingsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { usuario: usuarioLogado, logout } = useAuth()
   const { toast } = useToast()
+  const { preference: tema, resolvedTheme, setPreference: definirTema } = useTheme()
 
   // Estados da Conta
   const [nome, setNome] = useState('')
@@ -432,6 +437,42 @@ function SettingsPage() {
       </header>
 
       <div className="settings-content">
+        <section className="settings-section">
+          <div className="section-heading">
+            <div className="section-icon">
+              {resolvedTheme === 'dark' ? <FiMoon /> : <FiSun />}
+            </div>
+            <div>
+              <h2>Aparência</h2>
+              <p>Escolha um tema ou acompanhe a preferência do seu dispositivo.</p>
+            </div>
+          </div>
+
+          <div className="settings-card appearance-card">
+            <div className="appearance-copy">
+              <strong>Tema do sistema</strong>
+              <span>Preferência salva neste dispositivo.</span>
+            </div>
+            <div className="theme-options" role="group" aria-label="Tema da aplicação">
+              {([
+                ['light', 'Claro', <FiSun key="light" />],
+                ['dark', 'Escuro', <FiMoon key="dark" />],
+                ['system', 'Sistema', <FiMonitor key="system" />],
+              ] as [ThemePreference, string, React.ReactNode][]).map(([valor, rotulo, icone]) => (
+                <button
+                  type="button"
+                  key={valor}
+                  className={tema === valor ? 'theme-option active' : 'theme-option'}
+                  aria-pressed={tema === valor}
+                  onClick={() => definirTema(valor)}
+                >
+                  {icone}<span>{rotulo}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* SEÇÃO: MINHA CONTA */}
         <section className="settings-section">
           <div className="section-heading">

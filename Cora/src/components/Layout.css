@@ -3,9 +3,11 @@
 }
 
 .layout {
+  position: relative;
+  isolation: isolate;
   min-height: 100vh;
   display: flex;
-  background: #f5f7fb;
+  background: transparent;
   color: #1f2937;
   font-family: Inter, Arial, sans-serif;
 }
@@ -23,6 +25,7 @@
   flex-direction: column;
   padding: 28px 18px;
   position: fixed;
+  z-index: 2;
   left: 0;
   top: 0;
   bottom: 0;
@@ -156,6 +159,8 @@
 ========================= */
 
 .main-area {
+  position: relative;
+  z-index: 1;
   width: calc(100% - 250px);
   margin-left: 250px;
   min-height: 100vh;
@@ -172,11 +177,18 @@
 .page-content > .customers-page {
   min-height: 0;
   padding: 0;
+  background: transparent;
 }
 
 .page-content > .sales-page {
   min-height: 0;
   padding: 0;
+  background: transparent;
+}
+
+.page-content > .dashboard-page,
+.page-content > .reports-page {
+  background: transparent;
 }
 
 .page-content .settings-header,
@@ -203,6 +215,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 38px;
+}
+
+.settings-page,
+.products-page,
+.categories-page,
+.customers-page {
+  background: transparent;
 }
 
 .mobile-menu-button {

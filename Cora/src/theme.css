@@ -1,0 +1,192 @@
+html[data-theme='dark'] body {
+  background: #111a1d;
+  color: #e3ece9;
+}
+
+html[data-theme='dark'] .layout {
+  color: #e3ece9;
+}
+
+html[data-theme='dark'] .sidebar {
+  background: #10191b;
+}
+
+html[data-theme='dark'] .sidebar-footer {
+  border-color: #293638;
+}
+
+html[data-theme='dark'] .nav-item:hover,
+html[data-theme='dark'] .nav-item.active,
+html[data-theme='dark'] .settings-button:hover {
+  background: #263635;
+}
+
+html[data-theme='dark'] .topbar,
+html[data-theme='dark'] .settings-card,
+html[data-theme='dark'] .dashboard-kpi,
+html[data-theme='dark'] .dashboard-panel,
+html[data-theme='dark'] .report-card,
+html[data-theme='dark'] .reports-summary-card,
+html[data-theme='dark'] .reports-chart-panel,
+html[data-theme='dark'] .products-list,
+html[data-theme='dark'] .product-card,
+html[data-theme='dark'] .products-modal,
+html[data-theme='dark'] .categories-list,
+html[data-theme='dark'] .categories-state,
+html[data-theme='dark'] .categories-modal,
+html[data-theme='dark'] .customers-list,
+html[data-theme='dark'] .customers-state,
+html[data-theme='dark'] .customers-modal,
+html[data-theme='dark'] .sales-metric,
+html[data-theme='dark'] .sales-table-wrap,
+html[data-theme='dark'] .sales-detail-modal,
+html[data-theme='dark'] .sales-picker-modal,
+html[data-theme='dark'] .sales-cart-panel,
+html[data-theme='dark'] .modal-container.logout-modal,
+html[data-theme='dark'] .modal-container {
+  border-color: #344447;
+  background-color: #1b282b;
+  color: #e3ece9;
+}
+
+html[data-theme='dark'] .topbar {
+  background: rgba(24, 36, 39, 0.94);
+  border-color: #344447;
+}
+
+html[data-theme='dark'] .topbar h2,
+html[data-theme='dark'] .user-info strong,
+html[data-theme='dark'] .settings-header h1,
+html[data-theme='dark'] .section-heading h2,
+html[data-theme='dark'] .settings-card strong,
+html[data-theme='dark'] .appearance-copy strong,
+html[data-theme='dark'] .dashboard-heading h1,
+html[data-theme='dark'] .dashboard-kpi strong,
+html[data-theme='dark'] .dashboard-panel-heading h2,
+html[data-theme='dark'] .reports-header h1,
+html[data-theme='dark'] .report-card h2,
+html[data-theme='dark'] .products-header h1,
+html[data-theme='dark'] .products-count strong,
+html[data-theme='dark'] .categories-header h1,
+html[data-theme='dark'] .categories-count strong,
+html[data-theme='dark'] .categories-modal h2,
+html[data-theme='dark'] .category-row-main strong,
+html[data-theme='dark'] .customers-header h1,
+html[data-theme='dark'] .customers-count strong,
+html[data-theme='dark'] .customers-modal h2,
+html[data-theme='dark'] .customer-row-main strong,
+html[data-theme='dark'] .sales-header h1,
+html[data-theme='dark'] .sales-modal-header h2,
+html[data-theme='dark'] .sales-metric > strong {
+  color: #e3ece9;
+}
+
+html[data-theme='dark'] .settings-header-label,
+html[data-theme='dark'] .section-heading p,
+html[data-theme='dark'] .info-row span,
+html[data-theme='dark'] .appearance-copy span,
+html[data-theme='dark'] .topbar-label,
+html[data-theme='dark'] .user-info span,
+html[data-theme='dark'] .dashboard-heading p,
+html[data-theme='dark'] .dashboard-period,
+html[data-theme='dark'] .dashboard-kpi-label,
+html[data-theme='dark'] .reports-header p,
+html[data-theme='dark'] .report-card p,
+html[data-theme='dark'] .products-header p,
+html[data-theme='dark'] .products-count span,
+html[data-theme='dark'] .categories-header p,
+html[data-theme='dark'] .categories-count span,
+html[data-theme='dark'] .category-row-main span,
+html[data-theme='dark'] .customers-header p,
+html[data-theme='dark'] .customers-count span,
+html[data-theme='dark'] .customer-row-main span,
+html[data-theme='dark'] .customer-contact,
+html[data-theme='dark'] .sales-header p,
+html[data-theme='dark'] .sales-metric > span,
+html[data-theme='dark'] .sales-metric small {
+  color: #a6b6b5;
+}
+
+html[data-theme='dark'] .info-row,
+html[data-theme='dark'] .unit-create-form,
+html[data-theme='dark'] .category-row,
+html[data-theme='dark'] .customer-row,
+html[data-theme='dark'] .sales-table th,
+html[data-theme='dark'] .sales-table td,
+html[data-theme='dark'] .reports-table th,
+html[data-theme='dark'] .reports-table td {
+  border-color: #344447;
+}
+
+html[data-theme='dark'] .settings-input,
+html[data-theme='dark'] .dashboard-period select,
+html[data-theme='dark'] .products-search,
+html[data-theme='dark'] .categories-search,
+html[data-theme='dark'] .categories-search input,
+html[data-theme='dark'] .customers-search,
+html[data-theme='dark'] .customers-search input,
+html[data-theme='dark'] .customers-filters,
+html[data-theme='dark'] .customers-filters select,
+html[data-theme='dark'] .category-form-label input,
+html[data-theme='dark'] .customer-form-grid input,
+html[data-theme='dark'] .customer-form-grid select,
+html[data-theme='dark'] .theme-options,
+html[data-theme='dark'] .reports-secondary-button,
+html[data-theme='dark'] .sales-secondary-button,
+html[data-theme='dark'] .logout-button,
+html[data-theme='dark'] .mobile-menu-button {
+  border-color: #45585a;
+  background-color: #172326;
+  color: #e3ece9;
+}
+
+html[data-theme='dark'] .theme-option.active {
+  border-color: #617573;
+  background: #344745;
+  color: #eff8f5;
+}
+
+html[data-theme='dark'] .section-icon,
+html[data-theme='dark'] .category-icon,
+html[data-theme='dark'] .customer-icon,
+html[data-theme='dark'] .categories-empty-icon,
+html[data-theme='dark'] .customers-empty-icon {
+  border-color: #344447;
+  background: #263638;
+  color: #b5cdc6;
+}
+
+html[data-theme='dark'] .dashboard-kpi-icon,
+html[data-theme='dark'] .report-card-icon {
+  background: #263d39;
+}
+
+html[data-theme='dark'] .category-action-button:hover,
+html[data-theme='dark'] .customer-action-button:hover,
+html[data-theme='dark'] .logout-button:hover,
+html[data-theme='dark'] .sales-secondary-button:hover:not(:disabled),
+html[data-theme='dark'] .reports-secondary-button:hover:not(:disabled) {
+  background: #2a3b3d;
+  color: #eff8f5;
+}
+
+html[data-theme='dark'] .dashboard-page,
+html[data-theme='dark'] .reports-page,
+html[data-theme='dark'] .sales-page,
+html[data-theme='dark'] .settings-page,
+html[data-theme='dark'] .products-page,
+html[data-theme='dark'] .categories-page,
+html[data-theme='dark'] .customers-page {
+  color: #e3ece9;
+}
+
+html[data-theme='dark'] .subscription-notice {
+  border-color: #d9a441;
+  background: #3a3020;
+  color: #f1d69b;
+}
+
+html[data-theme='dark'] .sales-table tbody tr:hover,
+html[data-theme='dark'] .reports-table tbody tr:hover {
+  background: #243436;
+}
